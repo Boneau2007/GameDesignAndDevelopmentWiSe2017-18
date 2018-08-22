@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - lava
+  - collectable
+  - cookie
+  - mntVG
+  - ice
+  - GameOverCanvas
+  - snowball
+  - fireball
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - Player
+  - Ground
+  - DeathZone
+  - Lava
+  - collectable
+  - 
+  - MountainVG
+  - MountainBG
+  - SnowHill
+  - ice
+  - hazard
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: player
+    uniqueID: 3191142877
+    locked: 0
