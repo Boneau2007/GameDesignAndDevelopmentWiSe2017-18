@@ -2,24 +2,37 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Spawns hazards when the hazard-generation point reaches the configured position.
+/// </summary>
 public class HazardController : MonoBehaviour
 {
 
     private GameManager gameManager;
+    /// <summary>
+    /// Position that triggers hazard generation.
+    /// </summary>
     public Transform generationPoint;
     private int force = 500;
+    /// <summary>
+    /// Hazard prefab to instantiate.
+    /// </summary>
     public GameObject hazards;
 
     private int spawnChance;
 
-    // Use this for initialization
+    /// <summary>
+    /// Finds the game manager used to determine the score and player position.
+    /// </summary>
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
         //Random.InitState((int)Time.time);
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// Checks whether a hazard should be spawned.
+    /// </summary>
     void Update()
     {
         spawnHazard();
@@ -27,7 +40,8 @@ public class HazardController : MonoBehaviour
 
 
     /// <summary>
-    /// 
+    /// Spawns and propels a hazard when the generator reaches the generation point.
+    /// The spawn probability increases with the current score.
     /// </summary>
     public void spawnHazard()
     {

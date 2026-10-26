@@ -2,12 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Optionally spawns a random collectible above a platform.
+/// </summary>
 public class CollectableController : MonoBehaviour {
 
+	/// <summary>
+	/// Collectible prefabs available for spawning.
+	/// </summary>
 	public GameObject[] collectables; 
+	/// <summary>
+	/// Platform associated with this collectible controller.
+	/// </summary>
 	public GameObject platform;
 	private GameManager gameManger; 
-	// Use this for initialization
+	/// <summary>
+	/// Chooses whether to spawn a collectible and selects its prefab.
+	/// </summary>
 	void Start () {
 		gameManger = FindObjectOfType<GameManager> (); 
 
@@ -18,12 +29,18 @@ public class CollectableController : MonoBehaviour {
 
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates the component each frame.
+	/// </summary>
 	void Update () {
 		
 	}
 		
 
+	/// <summary>
+	/// Selects a collectible prefab at random.
+	/// </summary>
+	/// <returns>A randomly selected collectible prefab.</returns>
 	private GameObject chooseRandomCollectable(){
 		int select = Random.Range (0, 3);
 		return collectables[select]; 
@@ -31,10 +48,9 @@ public class CollectableController : MonoBehaviour {
 
 
 	/// <summary>
-	/// Spawns the collectable. Collectable gets random selected by the chooseRandomCollectable function. 
-	/// The colelctable needs an offset in y position. therefor we use the boxcollider.y value. 
+	/// Instantiates a collectible at a random height above this platform.
 	/// </summary>
-	/// <param name="collect">Collect.</param>
+	/// <param name="collect">The collectible prefab to instantiate.</param>
 	private void spawnCollectable(GameObject collect){
 		int heigth = Random.Range (0 , 4);
 		Vector3 vec = new Vector3 (0,heigth + this.GetComponent< BoxCollider2D>().size.y,0);

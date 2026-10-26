@@ -2,14 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Reserved component for collectible spawning behavior.
+/// </summary>
 public class CollectibleSpawningController : MonoBehaviour {
 
-	// Use this for initialization
+	/// <summary>
+	/// Initializes the component.
+	/// </summary>
 	void Start () {
 		
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates the component each frame.
+	/// </summary>
 	void Update () {
 		
 	}

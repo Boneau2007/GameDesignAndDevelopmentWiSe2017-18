@@ -2,14 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Reserved component for player movement behavior.
+/// </summary>
 public class PlayerMovementController : MonoBehaviour {
 
-	// Use this for initialization
+	/// <summary>
+	/// Initializes the movement component.
+	/// </summary>
 	void Start () {
 		
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates the movement component each frame.
+	/// </summary>
 	void Update () {
 		
 	}

@@ -2,18 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Generates platforms and hazard blocks ahead of the player.
+/// </summary>
 public class PlatformGenerator : MonoBehaviour {
 
+	/// <summary>
+	/// Default platform prefab.
+	/// </summary>
 	public GameObject thePlatform; 
+	/// <summary>
+	/// Lava prefab reference used by the generator.
+	/// </summary>
 	public GameObject lava;
+	/// <summary>
+	/// Position that triggers generation of additional platforms.
+	/// </summary>
 	public Transform generationPoint; 
+	/// <summary>
+	/// Gap distance selected for the next platform.
+	/// </summary>
 	public float distanceBetween;
 	private float platformWidth; 
+	/// <summary>
+	/// Smallest randomized distance between generated platforms.
+	/// </summary>
 	public float distanceBetweenMin; 
+	/// <summary>
+	/// Largest randomized distance between generated platforms.
+	/// </summary>
 	public float distanceBetweenMax;
 
+	/// <summary>
+	/// Platform prefabs available for generation.
+	/// </summary>
 	public GameObject[] thePlatforms; 
+	/// <summary>
+	/// Lava platform prefabs indexed by their height.
+	/// </summary>
 	public GameObject[] lavaPlatforms;
+	/// <summary>
+	/// Ice platform prefabs indexed by their height.
+	/// </summary>
 	public GameObject[] icePlatforms;
 	private int platformSelector; 
 	private float[] platformWidths; 
@@ -22,16 +52,22 @@ public class PlatformGenerator : MonoBehaviour {
 	private int chooseHazardBlock;
 
 
+	/// <summary>
+	/// Most recently selected platform prefab.
+	/// </summary>
 	public GameObject lastPlatform; 
 	//public ObjectPooler theObjectPool; 
-
-	// Use this for initialization
+	/// <summary>
+	/// Allocates platform-width storage for the configured platform prefabs.
+	/// </summary>
 	void Start () {
 		//platformWidth = thePlatform.GetComponent<BoxCollider2D> ().size.x;
 		platformWidths = new float[thePlatforms.Length];
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Generates a new platform section when the generation point is reached.
+	/// </summary>
 	void Update () {
 		if (transform.position.x < generationPoint.position.x) {
 
@@ -63,8 +99,7 @@ public class PlatformGenerator : MonoBehaviour {
 
 
 	/// <summary>
-	/// Selects the platform which has to be spawned next. 
-	/// depends on the last spwaned platform. prevent spawning obstacles,that can be oversome.
+	/// Selects a platform prefab based on the height of the last generated platform.
 	/// </summary>
 	private void selectPlatformToSpawn(){
 
@@ -89,7 +124,7 @@ public class PlatformGenerator : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Spawns the lava block.
+	/// Spawns a lava section using a height compatible with the previous platform.
 	/// </summary>
 	private void spawnLavaBlock(){
 
@@ -109,7 +144,7 @@ public class PlatformGenerator : MonoBehaviour {
 		
 
 	/// <summary>
-	/// Spawns a block after lava.
+	/// Spawns a normal platform after a lava section.
 	/// </summary>
 	private void spawnBlockAfterLava(){
 
@@ -124,10 +159,17 @@ public class PlatformGenerator : MonoBehaviour {
 		lastPlatform = thePlatforms[selectPlatform-1];
 	}
 
+	/// <summary>
+	/// Gets the last platform prefab selected by the generator.
+	/// </summary>
+	/// <returns>The last platform prefab.</returns>
 	public GameObject getLastPlatform(){
 		return lastPlatform; 
 	}
 
+	/// <summary>
+	/// Spawns an ice section using a height compatible with the previous platform.
+	/// </summary>
 	private void spawnIceBlock(){
 		int chooseIceHeight = Random.Range (0, 2);
 		int selectIce = (int)lastPlatform.GetComponent < BoxCollider2D> ().size.y;

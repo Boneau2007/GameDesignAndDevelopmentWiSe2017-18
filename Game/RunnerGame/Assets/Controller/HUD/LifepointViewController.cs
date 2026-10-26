@@ -3,24 +3,34 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
+/// <summary>
+/// Shows the player's remaining life points as text in the HUD.
+/// </summary>
 public class LifepointViewController : MonoBehaviour {
 
 	private GameManager gm;
+	/// <summary>
+	/// Text element used to display the current life-point count.
+	/// </summary>
 	public Text lifepointsObject;
 
 
-	// Use this for initialization
+	/// <summary>
+	/// Finds the game manager that provides the player's life-point count.
+	/// </summary>
 	void Start () {
 		gm = FindObjectOfType<GameManager> ();
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Refreshes the displayed life-point count.
+	/// </summary>
 	void Update () {
 		ShowLifePoints ();
 	}
 
 	/// <summary>
-	/// Shows the life points.
+	/// Writes the current life-point count to the HUD text element.
 	/// </summary>
 	void ShowLifePoints() {
 		lifepointsObject.text = "Lifepoints: " + gm.getPlayerLifePoints ();

@@ -3,23 +3,33 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
+/// <summary>
+/// Shows the current run score as text in the HUD.
+/// </summary>
 public class ScoreTextController : MonoBehaviour {
 
 	private GameManager gm;
+	/// <summary>
+	/// Text element used to display the current score.
+	/// </summary>
 	public Text scoreTextObject;
 
-	// Use this for initialization
+	/// <summary>
+	/// Finds the game manager that provides the current score.
+	/// </summary>
 	void Start () {
 		gm = FindObjectOfType<GameManager> ();
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Refreshes the displayed score.
+	/// </summary>
 	void Update () {
 		showScore ();
 	}
 
 	/// <summary>
-	/// Sets the score text that is displayed in the HUD.
+	/// Writes the current score to the HUD text element.
 	/// </summary>
 	void showScore() {
 		scoreTextObject.text = "Score: " + gm.getScore ();

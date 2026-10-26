@@ -5,6 +5,9 @@ using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Moves the camera across the level and increases its speed as the score grows.
+/// </summary>
 public class CameraController : MonoBehaviour {
 
 	[SerializeField]
@@ -13,11 +16,16 @@ public class CameraController : MonoBehaviour {
 	private float speedMultiplier;
 	private int limit;
 	private bool cameraMoves;
+	/// <summary>
+	/// Rigidbody used to move the camera horizontally.
+	/// </summary>
 	public Rigidbody2D myCamera;
 	[SerializeField]
 	private GameManager gameManager;
 
-    // Use this for initialization
+    /// <summary>
+    /// Finds the game manager and initializes camera movement settings.
+    /// </summary>
     void Start () {
 		gameManager = FindObjectOfType<GameManager> ();
 		myCamera = GetComponent<Rigidbody2D> ();
@@ -28,22 +36,25 @@ public class CameraController : MonoBehaviour {
 
 	}
 
-    // Update is called once per frame
+    /// <summary>
+    /// Moves the camera and checks whether its speed should increase.
+    /// </summary>
 	void FixedUpdate () {
 		
-		// Move Camera
 		moveCamera ();
 		increaseSpeed ();
     }
 
+	/// <summary>
+	/// Starts camera movement when the run begins and stops it when the player dies.
+	/// </summary>
 	void Update() {
 		checkGameStatusAndStartGame ();	
 
 	}
 
 	/// <summary>
-	/// Checks the game status and start game. Gamestatus is handled by the GameManager.
-	/// if the player dies, then the camera stops moving.
+	/// Synchronizes camera movement with the run state and player survival state.
 	/// </summary>
 	void checkGameStatusAndStartGame(){
 		if (gameManager.getGameStatus () && !cameraMoves && gameManager.getGameStatus ()) {
@@ -57,9 +68,9 @@ public class CameraController : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Toggles the camera movement. When the player dies, the Camera will stop. 
+	/// Sets the camera's movement speed according to whether it should move.
 	/// </summary>
-	/// <param name="shouldMove">If set to <c>true</c> should move.</param>
+	/// <param name="shouldMove"><see langword="true"/> to enable camera movement; otherwise, <see langword="false"/>.</param>
 	void toggleCameraMovement(bool shouldMove) {
 		if (shouldMove) {
 			cameraSpeed = 3.5f * speedMultiplier;
@@ -69,43 +80,40 @@ public class CameraController : MonoBehaviour {
 	}
 	
     /// <summary>
-    /// Gets the Position in x direction. 
-    /// The method is called from the GameManager and grants access to the camera position.
+    /// Gets the camera's horizontal world position.
     /// </summary>
-    /// <returns>The Position in X.</returns>
+    /// <returns>The camera's X coordinate.</returns>
     public float getPositionX(){
         return myCamera.position.x;
     }
 
     /// <summary>
-    /// Gets the Position in y direction. 
-    /// The method is called from the GameManager and grants access to the camera position.
+    /// Gets the camera's vertical world position.
     /// </summary>
-    /// <returns>The Position in Y.</returns>
+    /// <returns>The camera's Y coordinate.</returns>
     public float getPositionY()
     {
         return myCamera.position.y;
 }
 
 	/// <summary>
-	/// Gets the speed. The method is called from the GameManager and grants access to the camera Speed.
+	/// Gets the camera's current horizontal speed.
 	/// </summary>
-	/// <returns>The speed.</returns>
+	/// <returns>The camera speed in world units per second.</returns>
     public float getSpeed() {
         return cameraSpeed;
     }
 
 	/// <summary>
-	/// Moves the camera. The actual function that moves the camera.
-	/// Needs access to the RidgedBody of the Camera.
+	/// Applies the current horizontal speed to the camera's rigidbody.
 	/// </summary>
 	private void moveCamera(){
-		myCamera.velocity = new Vector2 (cameraSpeed, 0);
+		myCamera.linearVelocity = new Vector2 (cameraSpeed, 0);
 	}
 
 
 	/// <summary>
-	/// Increases the speed depending on the score.
+	/// Increases camera speed when the score passes the next configured threshold.
 	/// </summary>
 	private void increaseSpeed(){
 		if((gameManager.getScore () / limit) > 0){

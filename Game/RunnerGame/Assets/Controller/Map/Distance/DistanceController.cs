@@ -2,25 +2,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Tracks and exposes the distance covered during a run.
+/// </summary>
 public class DistanceController : MonoBehaviour {
 
+    /// <summary>
+    /// Distance currently recorded for the run, in metres.
+    /// </summary>
     [SerializeField]
     private int distance;
+    /// <summary>
+    /// Game manager used to read the run state and player and camera positions.
+    /// </summary>
     [SerializeField]
     private GameManager gameManager;
 
-    // Use this for initialization
+    /// <summary>
+    /// Finds the game manager used to calculate distance.
+    /// </summary>
     void Start () {
         gameManager = FindObjectOfType<GameManager>();
     }
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates the recorded distance while the run has not started.
+	/// </summary>
 	void Update () {
 	    startCalculatingDistance();
     }
 
     /// <summary>
-    /// Starts to calculating the distance. Invoked when the game is not started or stopped. 
+    /// Calculates distance from the player's and camera's horizontal positions while the run is inactive.
     /// </summary>
     public void startCalculatingDistance()
     {
@@ -32,16 +45,18 @@ public class DistanceController : MonoBehaviour {
         }
     }
     /// <summary>
-    /// Invoked when the Value of distance need to be called 
+    /// Gets the currently recorded distance.
     /// </summary>
+    /// <returns>The distance in metres.</returns>
     public int getDistance()
     {
         return distance;
     }
 
     /// <summary>
-    /// Invoked when the Value of distance need to be set
+    /// Sets the currently recorded distance.
     /// </summary>
+    /// <param name="distance">The distance in metres.</param>
     public void setDistance(int distance)
     {
         this.distance = distance;

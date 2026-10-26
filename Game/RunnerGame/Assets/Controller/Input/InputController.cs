@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-/**
- * Generell Input, that we get from the Keyboard
- */
+/// <summary>
+/// Reserved component for handling general keyboard input.
+/// </summary>
 public class InputController : MonoBehaviour {
 
-	// Use this for initialization
+	/// <summary>
+	/// Initializes the input controller.
+	/// </summary>
 	void Start () {
 		
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Processes input each frame.
+	/// </summary>
 	void Update () {
 
     }
