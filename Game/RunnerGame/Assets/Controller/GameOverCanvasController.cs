@@ -6,12 +6,6 @@ using UnityEngine.UI;
 /// </summary>
 public class GameOverCanvasController : MonoBehaviour
 {
-    private static readonly Color ForestGreen = new Color(0.055f, 0.18f, 0.14f, 0.97f);
-    private static readonly Color WarmCream = new Color(0.96f, 0.89f, 0.72f, 1f);
-    private static readonly Color DeepGreen = new Color(0.10f, 0.25f, 0.18f, 1f);
-    private static readonly Color ChristmasRed = new Color(0.66f, 0.12f, 0.14f, 1f);
-    private static readonly Color ButtonGreen = new Color(0.15f, 0.38f, 0.27f, 1f);
-
     /// <summary>
     /// UI text element used to display the final score.
     /// </summary>
@@ -23,6 +17,7 @@ public class GameOverCanvasController : MonoBehaviour
     public Text distanceText;
 
     private Canvas gameOverCanvas;
+    private GameManager gameManager;
     private Text titleText;
     private int finalScore;
     private int finalDistance;
@@ -34,10 +29,10 @@ public class GameOverCanvasController : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        GameManager manager = GetComponent<GameManager>();
-        if (manager != null)
+        gameManager = GetComponent<GameManager>();
+        if (gameManager != null)
         {
-            gameOverCanvas = manager.gameOverCanvas;
+            gameOverCanvas = gameManager.gameOverCanvas;
         }
 
         if (gameOverCanvas == null)
@@ -92,11 +87,12 @@ public class GameOverCanvasController : MonoBehaviour
             }
 
             titleText.text = Localization.Get(achievedNewHighScore ? "gameover.new_record" : "gameover.title");
-            titleText.color = achievedNewHighScore ? new Color(1f, 0.79f, 0.34f) : WarmCream;
+            titleText.color = achievedNewHighScore ? new Color(1f, 0.79f, 0.34f) : GameUITheme.WarmCream;
         }
 
         SetButtonLabel("startButton", Localization.Get("gameover.retry"));
         SetButtonLabel("quitButton", Localization.Get("gameover.quit"));
+        SetButtonLabel("mainMenuButton", Localization.Get("gameover.menu"));
     }
 
     private void OnDestroy()
@@ -117,7 +113,7 @@ public class GameOverCanvasController : MonoBehaviour
     private void ConfigurePanel(Transform panel)
     {
         RectTransform panelRect = panel as RectTransform;
-        SetRectTransform(panelRect, new Vector2(620f, 560f), Vector2.zero);
+        GameUITheme.SetRectTransform(panelRect, new Vector2(620f, 560f), Vector2.zero);
 
         VerticalLayoutGroup verticalLayout = panel.GetComponent<VerticalLayoutGroup>();
         if (verticalLayout != null)
@@ -134,7 +130,7 @@ public class GameOverCanvasController : MonoBehaviour
         Image panelImage = panel.GetComponent<Image>();
         if (panelImage != null)
         {
-            panelImage.color = ForestGreen;
+            panelImage.color = GameUITheme.ForestGreen;
             panelImage.raycastTarget = true;
         }
 
@@ -144,11 +140,11 @@ public class GameOverCanvasController : MonoBehaviour
             Image summaryPanelImage = summaryPanel.GetComponent<Image>();
             if (summaryPanelImage != null)
             {
-                summaryPanelImage.color = WarmCream;
+                summaryPanelImage.color = GameUITheme.WarmCream;
                 summaryPanelImage.raycastTarget = false;
             }
 
-            SetRectTransform(summaryPanel as RectTransform, new Vector2(460f, 170f), new Vector2(0f, 24f));
+            GameUITheme.SetRectTransform(summaryPanel as RectTransform, new Vector2(460f, 170f), new Vector2(0f, 24f));
             summaryPanel.SetAsFirstSibling();
         }
         else
@@ -157,18 +153,33 @@ public class GameOverCanvasController : MonoBehaviour
         }
 
         titleText = FindText(panel, "GameOverText");
-        scoreText = scoreText != null ? scoreText : FindText(panel, "ScoreText");
-        distanceText = distanceText != null ? distanceText : FindText(panel, "DistanceText");
+        scoreText = FindText(panel, "ScoreText") ?? scoreText;
+        distanceText = FindText(panel, "DistanceText") ?? distanceText;
+        if (summaryPanel != null)
+        {
+            if (scoreText != null)
+            {
+                scoreText.transform.SetParent(summaryPanel, false);
+            }
 
-        ConfigureText(titleText, new Vector2(540f, 74f), new Vector2(0f, 205f),
-            46, FontStyle.Bold, WarmCream, TextAnchor.MiddleCenter);
-        ConfigureText(scoreText, new Vector2(420f, 48f), new Vector2(0f, 54f),
-            28, FontStyle.Bold, DeepGreen, TextAnchor.MiddleCenter);
-        ConfigureText(distanceText, new Vector2(420f, 42f), new Vector2(0f, 5f),
-            23, FontStyle.Normal, DeepGreen, TextAnchor.MiddleCenter);
+            if (distanceText != null)
+            {
+                distanceText.transform.SetParent(summaryPanel, false);
+            }
+        }
 
-        ConfigureButton(panel, "startButton", Localization.Get("gameover.retry"), new Vector2(-118f, -195f), ChristmasRed);
-        ConfigureButton(panel, "quitButton", Localization.Get("gameover.quit"), new Vector2(118f, -195f), ButtonGreen);
+        GameUITheme.ConfigureText(titleText, new Vector2(540f, 74f), new Vector2(0f, 205f),
+            GameUITheme.ScreenTitleFontSize, FontStyle.Bold, GameUITheme.WarmCream, TextAnchor.MiddleCenter);
+        GameUITheme.ConfigureText(scoreText, new Vector2(420f, 48f), new Vector2(0f, 31f),
+            GameUITheme.ResultFontSize, FontStyle.Bold, GameUITheme.DeepGreen, TextAnchor.MiddleCenter);
+        GameUITheme.ConfigureText(distanceText, new Vector2(420f, 44f), new Vector2(0f, -27f),
+            GameUITheme.ResultFontSize, FontStyle.Bold, GameUITheme.DeepGreen, TextAnchor.MiddleCenter);
+
+        ConfigureButton(panel, "startButton", Localization.Get("gameover.retry"), new Vector2(-205f, -195f),
+            GameUITheme.ChristmasRed);
+        ConfigureButton(panel, "quitButton", Localization.Get("gameover.quit"), new Vector2(205f, -195f),
+            GameUITheme.ButtonGreen);
+        EnsureMainMenuButton(panel);
         if (titleText != null)
         {
             titleText.text = Localization.Get("gameover.title");
@@ -181,28 +192,6 @@ public class GameOverCanvasController : MonoBehaviour
         return child != null ? child.GetComponent<Text>() : null;
     }
 
-    private static void ConfigureText(Text text, Vector2 size, Vector2 position, int fontSize,
-        FontStyle fontStyle, Color color, TextAnchor alignment)
-    {
-        if (text == null)
-        {
-            Debug.LogError("Game-over screen is missing a required text element.");
-            return;
-        }
-
-        SetRectTransform(text.rectTransform, size, position);
-        text.fontSize = fontSize;
-        text.fontStyle = fontStyle;
-        text.color = color;
-        text.alignment = alignment;
-        text.horizontalOverflow = HorizontalWrapMode.Wrap;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.resizeTextForBestFit = true;
-        text.resizeTextMinSize = Mathf.Max(14, fontSize - 6);
-        text.resizeTextMaxSize = fontSize;
-        text.raycastTarget = false;
-    }
-
     private static void ConfigureButton(Transform panel, string objectName, string label,
         Vector2 position, Color backgroundColor)
     {
@@ -213,45 +202,51 @@ public class GameOverCanvasController : MonoBehaviour
             return;
         }
 
-        SetRectTransform(buttonTransform as RectTransform, new Vector2(220f, 60f), position);
+        GameUITheme.SetRectTransform(buttonTransform as RectTransform, new Vector2(180f, 60f), position);
 
         Button button = buttonTransform.GetComponent<Button>();
         Image image = buttonTransform.GetComponent<Image>();
-        if (image != null)
-        {
-            image.color = backgroundColor;
-        }
-
-        if (button != null)
-        {
-            ColorBlock colors = button.colors;
-            colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(1f, 0.91f, 0.7f, 1f);
-            colors.pressedColor = new Color(0.82f, 0.82f, 0.82f, 1f);
-            button.colors = colors;
-        }
+        GameUITheme.ConfigureButton(button, image, backgroundColor);
 
         Text buttonText = FindText(buttonTransform, "Text");
-        ConfigureText(buttonText, new Vector2(220f, 60f), Vector2.zero,
-            22, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+        GameUITheme.ConfigureText(buttonText, new Vector2(180f, 60f), Vector2.zero,
+            GameUITheme.ButtonFontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
         if (buttonText != null)
         {
             buttonText.text = label;
         }
     }
 
-    private static void SetRectTransform(RectTransform rectTransform, Vector2 size, Vector2 position)
+    private void EnsureMainMenuButton(Transform panel)
     {
-        if (rectTransform == null)
+        if (gameManager == null)
+        {
+            Debug.LogError("GameOverCanvasController could not find GameManager for its main-menu button.");
+            return;
+        }
+
+        Transform existingButton = panel.Find("quitButton");
+        Button templateButton = existingButton != null ? existingButton.GetComponent<Button>() : null;
+        if (templateButton == null)
+        {
+            Debug.LogError("GameOverCanvasController could not find the quit button to create its main-menu action.");
+            return;
+        }
+
+        Transform currentButton = panel.Find("mainMenuButton");
+        if (currentButton != null)
+        {
+            Destroy(currentButton.gameObject);
+        }
+
+        Button menuButton = GameUITheme.CreateButton(templateButton, panel, "mainMenuButton",
+            Localization.Get("gameover.menu"), gameManager.ReturnToMainMenu);
+        if (menuButton == null)
         {
             return;
         }
 
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        rectTransform.anchoredPosition = position;
-        rectTransform.sizeDelta = size;
-        rectTransform.localScale = Vector3.one;
+        ConfigureButton(panel, "mainMenuButton", Localization.Get("gameover.menu"), Vector2.zero,
+            GameUITheme.ButtonGreen);
     }
 }

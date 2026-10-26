@@ -1,11 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Tracks and exposes the distance covered during a run.
 /// </summary>
-public class DistanceController : MonoBehaviour {
+public class DistanceController : MonoBehaviour
+{
 
     /// <summary>
     /// Distance currently recorded for the run, in metres.
@@ -17,32 +16,63 @@ public class DistanceController : MonoBehaviour {
     /// </summary>
     [SerializeField]
     private GameManager gameManager;
+    private float startingCameraPositionX;
+    private bool runHasStarted;
 
     /// <summary>
     /// Finds the game manager used to calculate distance.
     /// </summary>
-    void Start () {
-        gameManager = FindObjectOfType<GameManager>();
-    }
-	
-	/// <summary>
-	/// Updates the recorded distance while the run has not started.
-	/// </summary>
-	void Update () {
-	    startCalculatingDistance();
+    void Start()
+    {
+        if (gameManager == null)
+        {
+            gameManager = FindObjectOfType<GameManager>();
+        }
     }
 
     /// <summary>
-    /// Calculates distance from the player's and camera's horizontal positions while the run is inactive.
+    /// Updates the recorded distance from camera travel during the active run.
+    /// </summary>
+    private void Update()
+    {
+        startCalculatingDistance();
+    }
+
+    /// <summary>
+    /// Calculates distance from camera travel while the run is active.
     /// </summary>
     public void startCalculatingDistance()
     {
-        if (!gameManager.getGameStatus())
+        if (gameManager == null || !gameManager.getGameStatus())
         {
-            int currentDistance = (int)gameManager.getPlayerPositionX() +
-                                 ((int)gameManager.getCameraPositionX() - (int)gameManager.getPlayerPositionX());
-            setDistance(currentDistance);
+            return;
         }
+
+        float currentCameraPositionX = gameManager.getCameraPositionX();
+        if (!runHasStarted)
+        {
+            startingCameraPositionX = currentCameraPositionX;
+            runHasStarted = true;
+        }
+
+        RefreshDistance(currentCameraPositionX);
+    }
+
+    /// <summary>
+    /// Captures the latest camera position as the final run distance.
+    /// </summary>
+    public void FinalizeDistance()
+    {
+        if (runHasStarted && gameManager != null)
+        {
+            RefreshDistance(gameManager.getCameraPositionX());
+        }
+    }
+
+    private void RefreshDistance(float currentCameraPositionX)
+    {
+        int currentDistance = Mathf.FloorToInt(Mathf.Max(0f, currentCameraPositionX - startingCameraPositionX));
+        setDistance(currentDistance);
     }
     /// <summary>
     /// Gets the currently recorded distance.

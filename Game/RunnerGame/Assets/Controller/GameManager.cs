@@ -18,6 +18,9 @@ public class GameManager : MonoBehaviour {
 	private bool paused;
 	private bool gameOverHandled;
 	private bool achievedNewHighScore;
+	private GUIStyle pausePanelStyle;
+	private GUIStyle pauseLabelStyle;
+	private GUIStyle pauseButtonStyle;
 
 	/// <summary>
 	/// Canvas shown when the player loses the run.
@@ -100,22 +103,49 @@ public class GameManager : MonoBehaviour {
 	/// </summary>
 	private void OnGUI () {
 	    if (paused) {
+			EnsurePauseStyles();
 	    	float panelWidth = 300f;
 	    	float panelHeight = 190f;
 	    	float x = (Screen.width - panelWidth) * 0.5f;
 	    	float y = (Screen.height - panelHeight) * 0.5f;
-	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), Localization.Get ("pause.title"));
-	    	GUI.Label (new Rect (x + 20f, y + 42f, panelWidth - 40f, 24f), Localization.Get ("pause.continue.hint"));
-	    	if (GUI.Button (new Rect (x + 20f, y + 78f, panelWidth - 40f, 30f), Localization.Get ("pause.continue"))) {
+			Color previousColor = GUI.color;
+			Color previousBackgroundColor = GUI.backgroundColor;
+			GUI.backgroundColor = GameUITheme.ForestGreen;
+	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), Localization.Get ("pause.title"), pausePanelStyle);
+			GUI.color = GameUITheme.WarmCream;
+	    	GUI.Label (new Rect (x + 20f, y + 42f, panelWidth - 40f, 24f), Localization.Get ("pause.continue.hint"), pauseLabelStyle);
+			GUI.color = previousColor;
+			GUI.backgroundColor = GameUITheme.ChristmasRed;
+	    	if (GUI.Button (new Rect (x + 20f, y + 78f, panelWidth - 40f, 30f), Localization.Get ("pause.continue"), pauseButtonStyle)) {
 	    		ResumeGame ();
 	    	}
-	    	if (GUI.Button (new Rect (x + 20f, y + 114f, panelWidth - 40f, 30f), Localization.Get ("pause.restart"))) {
+			GUI.backgroundColor = GameUITheme.ButtonGreen;
+	    	if (GUI.Button (new Rect (x + 20f, y + 114f, panelWidth - 40f, 30f), Localization.Get ("pause.restart"), pauseButtonStyle)) {
 	    		RestartRun ();
 	    	}
-	    	if (GUI.Button (new Rect (x + 20f, y + 150f, panelWidth - 40f, 30f), Localization.Get ("pause.menu"))) {
+	    	if (GUI.Button (new Rect (x + 20f, y + 150f, panelWidth - 40f, 30f), Localization.Get ("pause.menu"), pauseButtonStyle)) {
 	    		ReturnToMainMenu ();
 	    	}
+			GUI.color = previousColor;
+			GUI.backgroundColor = previousBackgroundColor;
 	    }
+	}
+
+	private void EnsurePauseStyles()
+	{
+		if (pausePanelStyle != null)
+		{
+			return;
+		}
+
+		pausePanelStyle = GameUITheme.CreatePanelStyle();
+		pausePanelStyle.fontSize = GameUITheme.PanelTitleFontSize;
+		pausePanelStyle.fontStyle = FontStyle.Bold;
+		pausePanelStyle.alignment = TextAnchor.UpperCenter;
+		pausePanelStyle.normal.textColor = GameUITheme.WarmCream;
+		pauseLabelStyle = GameUITheme.CreateLabelStyle(
+			GameUITheme.BodyFontSize, FontStyle.Normal, TextAnchor.MiddleCenter, GameUITheme.WarmCream);
+		pauseButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.ButtonFontSize);
 	}
 
 	/// <summary>
@@ -259,6 +289,9 @@ public class GameManager : MonoBehaviour {
 	/// </summary>
 	private void HandleGameOver () {
 		gameOverHandled = true;
+		if (distanceController != null) {
+			distanceController.FinalizeDistance ();
+		}
 		started = false;
 		paused = false;
 		Time.timeScale = 0f;
@@ -305,7 +338,7 @@ public class GameManager : MonoBehaviour {
 	/// <summary>
 	/// Loads the main menu scene.
 	/// </summary>
-	private void ReturnToMainMenu () {
+	public void ReturnToMainMenu () {
 		Time.timeScale = 1f;
 		SceneManager.LoadScene ("mainmenu");
 	}
