@@ -167,9 +167,9 @@ public class GameOverCanvasController : MonoBehaviour
         GameUITheme.ConfigureText(distanceText, new Vector2(420f, 44f), new Vector2(0f, -27f),
             GameUITheme.ResultFontSize, FontStyle.Bold, GameUITheme.DeepGreen, TextAnchor.MiddleCenter);
 
-        ConfigureButton(panel, "startButton", Localization.Get("gameover.retry"), new Vector2(-205f, -195f),
+        ConfigureButton(panel, "startButton", Localization.Get("gameover.retry"), new Vector2(0f, -110f),
             GameUITheme.ChristmasRed);
-        ConfigureButton(panel, "quitButton", Localization.Get("gameover.quit"), new Vector2(205f, -195f),
+        ConfigureButton(panel, "quitButton", Localization.Get("gameover.quit"), new Vector2(0f, -180f),
             GameUITheme.ButtonGreen);
         EnsureMainMenuButton(panel);
         if (titleText != null)
@@ -201,7 +201,7 @@ public class GameOverCanvasController : MonoBehaviour
         GameUITheme.ConfigureButton(button, image, backgroundColor);
 
         Text buttonText = FindText(buttonTransform, "Text");
-        GameUITheme.ConfigureText(buttonText, new Vector2(180f, 60f), Vector2.zero,
+        GameUITheme.ConfigureButtonText(buttonText,
             GameUITheme.ButtonFontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
         if (buttonText != null)
         {
@@ -238,7 +238,7 @@ public class GameOverCanvasController : MonoBehaviour
             return;
         }
 
-        ConfigureButton(panel, "mainMenuButton", Localization.Get("gameover.menu"), Vector2.zero,
+        ConfigureButton(panel, "mainMenuButton", Localization.Get("gameover.menu"), new Vector2(0f, -250f),
             GameUITheme.ButtonGreen);
     }
 }

@@ -82,8 +82,8 @@ public class ScoreTextController : MonoBehaviour {
 			GameUITheme.HudFontSize, FontStyle.Bold, GameUITheme.WarmCream, TextAnchor.MiddleCenter);
 		textRect.anchorMin = Vector2.zero;
 		textRect.anchorMax = Vector2.one;
-		textRect.offsetMin = new Vector2(12f, 4f);
-		textRect.offsetMax = new Vector2(-12f, -4f);
+		textRect.offsetMin = new Vector2(12f, GameUITheme.ItemPadding);
+		textRect.offsetMax = new Vector2(-12f, -GameUITheme.ItemPadding);
 		scoreTextObject.transform.SetAsLastSibling();
 	}
 }

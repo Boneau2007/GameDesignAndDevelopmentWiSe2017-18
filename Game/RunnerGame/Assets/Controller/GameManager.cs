@@ -140,11 +140,11 @@ public class GameManager : MonoBehaviour {
 
 		pausePanelStyle = GameUITheme.CreatePanelStyle();
 		pausePanelStyle.fontSize = GameUITheme.PanelTitleFontSize;
-		pausePanelStyle.fontStyle = FontStyle.Bold;
+		pausePanelStyle.fontStyle = GameUITheme.EmphasisFontStyle;
 		pausePanelStyle.alignment = TextAnchor.UpperCenter;
 		pausePanelStyle.normal.textColor = GameUITheme.WarmCream;
 		pauseLabelStyle = GameUITheme.CreateLabelStyle(
-			GameUITheme.BodyFontSize, FontStyle.Normal, TextAnchor.MiddleCenter, GameUITheme.WarmCream);
+			GameUITheme.BodyFontSize, GameUITheme.BodyFontStyle, TextAnchor.MiddleCenter, GameUITheme.WarmCream);
 		pauseButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.ButtonFontSize);
 	}
 

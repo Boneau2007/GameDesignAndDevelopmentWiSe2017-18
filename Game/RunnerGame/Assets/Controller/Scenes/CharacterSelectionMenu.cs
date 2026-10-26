@@ -41,6 +41,7 @@ public class CharacterSelectionMenu : MonoBehaviour
     private int selectedCharacter;
     private Sprite previewSprite;
     private GameObject mainMenuPanel;
+    private Canvas menuCanvas;
     private Text menuLanguageText;
     private bool selectingCharacter;
     private bool showingLanguageSelector;
@@ -57,9 +58,13 @@ public class CharacterSelectionMenu : MonoBehaviour
     private GUIStyle languageOptionPanelStyle;
     private GUIStyle languageButtonStyle;
     private GUIStyle languageSelectedStyle;
+    private GUIStyle languageNameStyle;
     private GUIStyle flagStyle;
     private IReadOnlyList<Localization.LanguageOption> availableLanguages;
     private Vector2 languageScrollPosition;
+    private int lastMenuScreenWidth;
+    private int lastMenuScreenHeight;
+    private float lastMenuScaleFactor;
 
     /// <summary>
     /// Loads the saved selection and locates the main-menu panel.
@@ -71,7 +76,7 @@ public class CharacterSelectionMenu : MonoBehaviour
         selectingCharacter = false;
         UpdatePreview();
         availableLanguages = Localization.AvailableLanguages;
-        Canvas menuCanvas = mainMenuPanel != null
+        menuCanvas = mainMenuPanel != null
             ? mainMenuPanel.GetComponentInParent<Canvas>()
             : FindObjectOfType<Canvas>();
         if (menuCanvas != null)
@@ -85,6 +90,11 @@ public class CharacterSelectionMenu : MonoBehaviour
 
         CaptureMainMenuTexts();
         AddLanguageNavigationButton();
+        if (menuCanvas != null)
+        {
+            GameUITheme.ConfigureResponsiveMenu(menuCanvas.transform);
+            CacheMenuResolution();
+        }
         Localization.LanguageChanged += ApplyMainMenuLocalization;
         ApplyMainMenuLocalization();
     }
@@ -168,12 +178,15 @@ public class CharacterSelectionMenu : MonoBehaviour
         GUI.Label(new Rect(x + 126f, y + 84f, panelWidth - 150f, 54f),
             Localization.Get(CharacterDescriptions[selectedCharacter]), descriptionStyle);
 
-        float buttonWidth = (panelWidth - 24f) / CharacterNames.Length;
+        float buttonGap = GameUITheme.ItemSpacing;
+        float buttonWidth = (panelWidth - 24f - buttonGap * (CharacterNames.Length - 1)) /
+                            CharacterNames.Length;
         for (int i = 0; i < CharacterNames.Length; i++)
         {
             string label = i == selectedCharacter ? "[" + (i + 1) + "]" : (i + 1).ToString();
             GUI.backgroundColor = i == selectedCharacter ? GameUITheme.ChristmasRed : GameUITheme.ButtonGreen;
-            if (GUI.Button(new Rect(x + 12f + buttonWidth * i, y + 154f, buttonWidth - 3f, 30f), label,
+            if (GUI.Button(new Rect(x + 12f + (buttonWidth + buttonGap) * i, y + 154f,
+                    buttonWidth, 30f), label,
                     optionButtonStyle))
             {
                 SelectCharacter(i);
@@ -206,7 +219,7 @@ public class CharacterSelectionMenu : MonoBehaviour
         }
 
         const float buttonHeight = 62f;
-        const float buttonGap = 4f;
+        const float buttonGap = GameUITheme.ItemSpacing;
         const float panelPadding = 8f;
         int columns = Mathf.Min(3, availableLanguages.Count);
         int rows = Mathf.CeilToInt(availableLanguages.Count / (float)columns);
@@ -257,7 +270,7 @@ public class CharacterSelectionMenu : MonoBehaviour
             GUI.Label(new Rect(buttonRect.x + 3f, buttonRect.y + 2f, buttonRect.width - 6f, 30f),
                 language.Flag, flagStyle);
             GUI.Label(new Rect(buttonRect.x + 2f, buttonRect.y + 31f, buttonRect.width - 4f, 26f),
-                language.DisplayName, optionButtonStyle);
+                language.DisplayName, languageNameStyle);
         }
         GUI.EndScrollView();
 
@@ -286,7 +299,9 @@ public class CharacterSelectionMenu : MonoBehaviour
             return;
         }
 
-        Button languageButton = GameUITheme.CreateButton(menuButtons[0], mainMenuPanel.transform,
+        Button quitButton = FindQuitButton(menuButtons);
+        Transform menuButtonParent = quitButton != null ? quitButton.transform.parent : mainMenuPanel.transform;
+        Button languageButton = GameUITheme.CreateButton(menuButtons[0], menuButtonParent,
             "LanguageNavigationButton", Localization.Get("menu.language"), OpenLanguageSelector);
         if (languageButton == null)
         {
@@ -300,7 +315,34 @@ public class CharacterSelectionMenu : MonoBehaviour
             Debug.LogError("The main-menu button template does not contain a Text component.");
         }
 
-        languageButton.transform.SetAsLastSibling();
+        if (quitButton != null)
+        {
+            int quitIndex = quitButton.transform.GetSiblingIndex();
+            int languageIndex = languageButton.transform.GetSiblingIndex();
+            languageButton.transform.SetSiblingIndex(quitIndex);
+            quitButton.transform.SetSiblingIndex(languageIndex);
+        }
+        else
+        {
+            languageButton.transform.SetAsLastSibling();
+        }
+    }
+
+    private static Button FindQuitButton(Button[] buttons)
+    {
+        foreach (Button button in buttons)
+        {
+            for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
+            {
+                if (string.Equals(button.onClick.GetPersistentMethodName(i), "QuitProgramm",
+                        StringComparison.Ordinal))
+                {
+                    return button;
+                }
+            }
+        }
+
+        return null;
     }
 
     private void OpenLanguageSelector()
@@ -392,15 +434,15 @@ public class CharacterSelectionMenu : MonoBehaviour
             return;
         }
 
-        titleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, FontStyle.Bold,
+        titleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, GameUITheme.EmphasisFontStyle,
             TextAnchor.MiddleCenter, GameUITheme.WarmCream);
-        characterNameStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize + 4, FontStyle.Bold,
+        characterNameStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize + 4, GameUITheme.EmphasisFontStyle,
             TextAnchor.MiddleLeft, GameUITheme.DeepGreen);
-        descriptionStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize, FontStyle.Normal,
+        descriptionStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize, GameUITheme.BodyFontStyle,
             TextAnchor.UpperLeft, GameUITheme.DeepGreen);
-        footerStyle = GameUITheme.CreateLabelStyle(GameUITheme.SmallLabelFontSize, FontStyle.Normal, TextAnchor.MiddleCenter,
+        footerStyle = GameUITheme.CreateLabelStyle(GameUITheme.SmallLabelFontSize, GameUITheme.BodyFontStyle, TextAnchor.MiddleCenter,
             GameUITheme.WarmCream);
-        languageTitleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, FontStyle.Bold,
+        languageTitleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, GameUITheme.EmphasisFontStyle,
             TextAnchor.MiddleCenter, GameUITheme.WarmCream);
 
         optionButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.BodyFontSize);
@@ -411,7 +453,9 @@ public class CharacterSelectionMenu : MonoBehaviour
         languageOptionPanelStyle = GameUITheme.CreatePanelStyle(GameUITheme.ButtonGreen, Color.white);
         languageSelectedStyle = GameUITheme.CreatePanelStyle(GameUITheme.ChristmasRed, Color.white);
         languageButtonStyle = GameUITheme.CreateTransparentButtonStyle(GameUITheme.BodyFontSize);
-        flagStyle = GameUITheme.CreateLabelStyle(GameUITheme.LanguageFlagFontSize, FontStyle.Normal,
+        languageNameStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize, GameUITheme.EmphasisFontStyle,
+            TextAnchor.MiddleCenter, Color.white);
+        flagStyle = GameUITheme.CreateLabelStyle(GameUITheme.LanguageFlagFontSize, GameUITheme.BodyFontStyle,
             TextAnchor.MiddleCenter, Color.white);
     }
 
@@ -480,6 +524,7 @@ public class CharacterSelectionMenu : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        RefreshResponsiveMenu();
         if (!selectingCharacter)
         {
             return;
@@ -490,5 +535,25 @@ public class CharacterSelectionMenu : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.Alpha3)) SelectCharacter(2);
         else if (Input.GetKeyDown(KeyCode.Alpha4)) SelectCharacter(3);
         else if (Input.GetKeyDown(KeyCode.Alpha5)) SelectCharacter(4);
+    }
+
+    private void RefreshResponsiveMenu()
+    {
+        if (menuCanvas == null ||
+            (lastMenuScreenWidth == Screen.width && lastMenuScreenHeight == Screen.height &&
+             Mathf.Approximately(lastMenuScaleFactor, menuCanvas.scaleFactor)))
+        {
+            return;
+        }
+
+        GameUITheme.ConfigureResponsiveMenu(menuCanvas.transform);
+        CacheMenuResolution();
+    }
+
+    private void CacheMenuResolution()
+    {
+        lastMenuScreenWidth = Screen.width;
+        lastMenuScreenHeight = Screen.height;
+        lastMenuScaleFactor = menuCanvas != null ? menuCanvas.scaleFactor : 1f;
     }
 }

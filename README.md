@@ -16,7 +16,7 @@ Choose **Language** in the main-menu navigation to open the flag selector. Germa
 
 ## Shared UI theme
 
-The main menu and its About/Highscore submenus, character and language selectors, gameplay HUD, pause panel, and game-over screen share the palette and typography in `Game/RunnerGame/Assets/Controller/GameUITheme.cs`. Forest green panels use warm-cream text; cream cards use deep-green text; primary actions use Christmas red, secondary actions use green, and panels share a gold outline. New Unity UI panels, buttons, and labels should use `GameUITheme.ConfigurePanel`, `ConfigureButton`/`ConfigureMenuButton`, and `ConfigureText`; immediate-mode GUI screens should use its shared panel, label, and button style helpers.
+The main menu and its About/Highscore submenus, character and language selectors, gameplay HUD, pause panel, and game-over screen share the palette, typography, and spacing rules in `Game/RunnerGame/Assets/Controller/GameUITheme.cs`. Forest green panels use warm-cream text; cream cards use deep-green text; primary actions use Christmas red, secondary actions use green, and panels share a gold outline. Theme helpers apply at least 5 px of internal padding to labels and button content and 5 px of spacing between selector options. Main-menu and About/Highscore panel widths and content areas adapt to the Canvas viewport, with dedicated space for submenu navigation. New Unity UI panels, buttons, and labels should use `GameUITheme.ConfigurePanel`, `ConfigureButton`/`ConfigureMenuButton`, and `ConfigureText`; immediate-mode GUI screens should use its shared panel, label, and button style helpers.
 
 | Action | Controls |
 | --- | --- |
