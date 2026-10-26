@@ -87,7 +87,7 @@ public class GameOverCanvasController : MonoBehaviour
             }
 
             titleText.text = Localization.Get(achievedNewHighScore ? "gameover.new_record" : "gameover.title");
-            titleText.color = achievedNewHighScore ? new Color(1f, 0.79f, 0.34f) : GameUITheme.WarmCream;
+            titleText.color = achievedNewHighScore ? GameUITheme.AccentGold : GameUITheme.WarmCream;
         }
 
         SetButtonLabel("startButton", Localization.Get("gameover.retry"));
@@ -128,21 +128,13 @@ public class GameOverCanvasController : MonoBehaviour
         }
 
         Image panelImage = panel.GetComponent<Image>();
-        if (panelImage != null)
-        {
-            panelImage.color = GameUITheme.ForestGreen;
-            panelImage.raycastTarget = true;
-        }
+        GameUITheme.ConfigurePanel(panelImage, GameUITheme.ForestGreen);
 
         Transform summaryPanel = panel.Find("RunSummaryPanel");
         if (summaryPanel != null)
         {
             Image summaryPanelImage = summaryPanel.GetComponent<Image>();
-            if (summaryPanelImage != null)
-            {
-                summaryPanelImage.color = GameUITheme.WarmCream;
-                summaryPanelImage.raycastTarget = false;
-            }
+            GameUITheme.ConfigurePanel(summaryPanelImage, GameUITheme.WarmCream);
 
             GameUITheme.SetRectTransform(summaryPanel as RectTransform, new Vector2(460f, 170f), new Vector2(0f, 24f));
             summaryPanel.SetAsFirstSibling();

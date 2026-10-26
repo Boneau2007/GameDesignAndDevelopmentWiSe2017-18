@@ -74,29 +74,16 @@ public class ScoreTextController : MonoBehaviour {
 		scorePanel.sizeDelta = new Vector2(400f, 84f);
 
 		Image panelImage = panelObject.GetComponent<Image>();
-		panelImage.color = GameUITheme.ForestGreen;
-		panelImage.raycastTarget = false;
-		Outline outline = panelObject.AddComponent<Outline>();
-		outline.effectColor = GameUITheme.WarmCream;
-		outline.effectDistance = new Vector2(2f, 2f);
-		outline.useGraphicAlpha = true;
+		GameUITheme.ConfigurePanel(panelImage, GameUITheme.ForestGreen);
 
 		scoreTextObject.rectTransform.SetParent(scorePanel, false);
 		RectTransform textRect = scoreTextObject.rectTransform;
+		GameUITheme.ConfigureText(scoreTextObject, new Vector2(376f, 76f), Vector2.zero,
+			GameUITheme.HudFontSize, FontStyle.Bold, GameUITheme.WarmCream, TextAnchor.MiddleCenter);
 		textRect.anchorMin = Vector2.zero;
 		textRect.anchorMax = Vector2.one;
 		textRect.offsetMin = new Vector2(12f, 4f);
 		textRect.offsetMax = new Vector2(-12f, -4f);
-		scoreTextObject.fontSize = GameUITheme.HudFontSize;
-		scoreTextObject.fontStyle = FontStyle.Bold;
-		scoreTextObject.color = GameUITheme.WarmCream;
-		scoreTextObject.alignment = TextAnchor.MiddleCenter;
-		scoreTextObject.horizontalOverflow = HorizontalWrapMode.Wrap;
-		scoreTextObject.verticalOverflow = VerticalWrapMode.Overflow;
-		scoreTextObject.resizeTextForBestFit = true;
-		scoreTextObject.resizeTextMinSize = GameUITheme.BodyFontSize + 2;
-		scoreTextObject.resizeTextMaxSize = GameUITheme.HudFontSize;
-		scoreTextObject.raycastTarget = false;
 		scoreTextObject.transform.SetAsLastSibling();
 	}
 }

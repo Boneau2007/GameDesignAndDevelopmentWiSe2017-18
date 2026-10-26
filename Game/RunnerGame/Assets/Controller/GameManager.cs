@@ -55,6 +55,10 @@ public class GameManager : MonoBehaviour {
 		platformGenerator = FindObjectOfType<PlatformGenerator> ();
 	    distanceController = FindObjectOfType<DistanceController>();
 		hazardController = FindObjectOfType<HazardController>();
+	    GameObject hudObject = GameObject.Find("HUD");
+	    if (hudObject != null) {
+	    	GameUITheme.ConfigureGameplayCanvas(hudObject.transform);
+	    }
 	    Time.timeScale = 1f;
 	    if (gameOverCanvas != null) {
 	    	gameOverCanvas.enabled = false;
@@ -108,13 +112,10 @@ public class GameManager : MonoBehaviour {
 	    	float panelHeight = 190f;
 	    	float x = (Screen.width - panelWidth) * 0.5f;
 	    	float y = (Screen.height - panelHeight) * 0.5f;
-			Color previousColor = GUI.color;
 			Color previousBackgroundColor = GUI.backgroundColor;
-			GUI.backgroundColor = GameUITheme.ForestGreen;
+			GUI.backgroundColor = Color.white;
 	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), Localization.Get ("pause.title"), pausePanelStyle);
-			GUI.color = GameUITheme.WarmCream;
 	    	GUI.Label (new Rect (x + 20f, y + 42f, panelWidth - 40f, 24f), Localization.Get ("pause.continue.hint"), pauseLabelStyle);
-			GUI.color = previousColor;
 			GUI.backgroundColor = GameUITheme.ChristmasRed;
 	    	if (GUI.Button (new Rect (x + 20f, y + 78f, panelWidth - 40f, 30f), Localization.Get ("pause.continue"), pauseButtonStyle)) {
 	    		ResumeGame ();
@@ -126,7 +127,6 @@ public class GameManager : MonoBehaviour {
 	    	if (GUI.Button (new Rect (x + 20f, y + 150f, panelWidth - 40f, 30f), Localization.Get ("pause.menu"), pauseButtonStyle)) {
 	    		ReturnToMainMenu ();
 	    	}
-			GUI.color = previousColor;
 			GUI.backgroundColor = previousBackgroundColor;
 	    }
 	}

@@ -14,6 +14,10 @@ Click **Start** in the main menu to open character selection in that same scene.
 
 Choose **Language** in the main-menu navigation to open the flag selector. German, English, and French are included; the selected language is saved between runs and used by the menus, pause screen, game-over screen, and HUD. The selector discovers language bundles automatically. The game-over screen includes retry, quit, and return-to-main-menu actions.
 
+## Shared UI theme
+
+The main menu and its About/Highscore submenus, character and language selectors, gameplay HUD, pause panel, and game-over screen share the palette and typography in `Game/RunnerGame/Assets/Controller/GameUITheme.cs`. Forest green panels use warm-cream text; cream cards use deep-green text; primary actions use Christmas red, secondary actions use green, and panels share a gold outline. New Unity UI panels, buttons, and labels should use `GameUITheme.ConfigurePanel`, `ConfigureButton`/`ConfigureMenuButton`, and `ConfigureText`; immediate-mode GUI screens should use its shared panel, label, and button style helpers.
+
 | Action | Controls |
 | --- | --- |
 | Jump | `Space` or `Up Arrow` |

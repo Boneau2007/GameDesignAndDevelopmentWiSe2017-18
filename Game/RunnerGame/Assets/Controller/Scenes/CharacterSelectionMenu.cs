@@ -50,7 +50,11 @@ public class CharacterSelectionMenu : MonoBehaviour
     private GUIStyle optionButtonStyle;
     private GUIStyle actionButtonStyle;
     private GUIStyle footerStyle;
+    private GUIStyle languageTitleStyle;
+    private GUIStyle selectionPanelStyle;
+    private GUIStyle selectionCardStyle;
     private GUIStyle languagePanelStyle;
+    private GUIStyle languageOptionPanelStyle;
     private GUIStyle languageButtonStyle;
     private GUIStyle languageSelectedStyle;
     private GUIStyle flagStyle;
@@ -67,8 +71,19 @@ public class CharacterSelectionMenu : MonoBehaviour
         selectingCharacter = false;
         UpdatePreview();
         availableLanguages = Localization.AvailableLanguages;
+        Canvas menuCanvas = mainMenuPanel != null
+            ? mainMenuPanel.GetComponentInParent<Canvas>()
+            : FindObjectOfType<Canvas>();
+        if (menuCanvas != null)
+        {
+            GameUITheme.ConfigureMenuCanvas(menuCanvas.transform);
+        }
+        else
+        {
+            Debug.LogError("CharacterSelectionMenu could not find the main-menu Canvas to apply the shared theme.");
+        }
+
         CaptureMainMenuTexts();
-        StyleMainMenuButtons();
         AddLanguageNavigationButton();
         Localization.LanguageChanged += ApplyMainMenuLocalization;
         ApplyMainMenuLocalization();
@@ -108,13 +123,10 @@ public class CharacterSelectionMenu : MonoBehaviour
         float x = (Screen.width - panelWidth) * 0.5f;
         float y = (Screen.height - panelHeight) * 0.5f;
 
-        Color previousColor = GUI.color;
         Color previousBackgroundColor = GUI.backgroundColor;
-        GUI.color = GameUITheme.ForestGreen;
-        GUI.Box(new Rect(x, y, panelWidth, panelHeight), string.Empty);
-        GUI.color = GameUITheme.WarmCream;
-        GUI.Box(new Rect(x + 12f, y + 42f, panelWidth - 24f, 106f), string.Empty);
-        GUI.color = previousColor;
+        GUI.backgroundColor = Color.white;
+        GUI.Box(new Rect(x, y, panelWidth, panelHeight), string.Empty, selectionPanelStyle);
+        GUI.Box(new Rect(x + 12f, y + 42f, panelWidth - 24f, 106f), string.Empty, selectionCardStyle);
         GUI.Label(new Rect(x + 12f, y + 10f, panelWidth - 24f, 24f),
             Localization.Get("selection.title"), titleStyle);
 
@@ -184,7 +196,6 @@ public class CharacterSelectionMenu : MonoBehaviour
         GUI.backgroundColor = previousBackgroundColor;
         GUI.Label(new Rect(x + 12f, y + 238f, panelWidth - 24f, 18f),
             Localization.Get("selection.hint"), footerStyle);
-        GUI.color = previousColor;
     }
 
     private void DrawLanguageSelector()
@@ -212,14 +223,11 @@ public class CharacterSelectionMenu : MonoBehaviour
         float x = (Screen.width - panelWidth) * 0.5f;
         float y = (Screen.height - panelHeight) * 0.5f;
 
-        Color oldColor = GUI.color;
         Color oldBackground = GUI.backgroundColor;
-        GUI.color = GameUITheme.ForestGreen;
+        GUI.backgroundColor = Color.white;
         GUI.Box(new Rect(x, y, panelWidth, panelHeight), string.Empty, languagePanelStyle);
-        GUI.color = GameUITheme.WarmCream;
-        GUI.Label(new Rect(x + panelPadding, y + 3f, panelWidth - panelPadding * 2f, 20f),
-            Localization.Get("language.title"), footerStyle);
-        GUI.color = oldColor;
+        GUI.Label(new Rect(x + panelPadding, y + 1f, panelWidth - panelPadding * 2f, 24f),
+            Localization.Get("language.title"), languageTitleStyle);
 
         Rect scrollRect = new Rect(x + panelPadding, y + 24f,
             panelWidth - panelPadding * 2f, panelHeight - 68f);
@@ -239,10 +247,8 @@ public class CharacterSelectionMenu : MonoBehaviour
 
             bool isSelected = string.Equals(Localization.CurrentLanguageCode, language.Code,
                 StringComparison.OrdinalIgnoreCase);
-            GUI.backgroundColor = isSelected
-                ? new Color(0.66f, 0.12f, 0.14f, 1f)
-                : new Color(0.15f, 0.38f, 0.27f, 1f);
-            GUI.Box(buttonRect, string.Empty, isSelected ? languageSelectedStyle : languagePanelStyle);
+            GUI.backgroundColor = Color.white;
+            GUI.Box(buttonRect, string.Empty, isSelected ? languageSelectedStyle : languageOptionPanelStyle);
             if (GUI.Button(buttonRect, GUIContent.none, languageButtonStyle))
             {
                 Localization.SetLanguage(language.Code);
@@ -262,7 +268,6 @@ public class CharacterSelectionMenu : MonoBehaviour
             ReturnFromLanguageSelector();
         }
 
-        GUI.color = oldColor;
         GUI.backgroundColor = oldBackground;
     }
 
@@ -296,21 +301,6 @@ public class CharacterSelectionMenu : MonoBehaviour
         }
 
         languageButton.transform.SetAsLastSibling();
-    }
-
-    private void StyleMainMenuButtons()
-    {
-        if (mainMenuPanel == null)
-        {
-            return;
-        }
-
-        Button[] buttons = mainMenuPanel.GetComponentsInChildren<Button>(true);
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            GameUITheme.ConfigureMenuButton(
-                buttons[i], i == 0 ? GameUITheme.ChristmasRed : GameUITheme.ButtonGreen);
-        }
     }
 
     private void OpenLanguageSelector()
@@ -410,15 +400,17 @@ public class CharacterSelectionMenu : MonoBehaviour
             TextAnchor.UpperLeft, GameUITheme.DeepGreen);
         footerStyle = GameUITheme.CreateLabelStyle(GameUITheme.SmallLabelFontSize, FontStyle.Normal, TextAnchor.MiddleCenter,
             GameUITheme.WarmCream);
+        languageTitleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, FontStyle.Bold,
+            TextAnchor.MiddleCenter, GameUITheme.WarmCream);
 
         optionButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.BodyFontSize);
         actionButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.ButtonFontSize);
         languagePanelStyle = GameUITheme.CreatePanelStyle();
-        languageSelectedStyle = GameUITheme.CreatePanelStyle();
-        languageButtonStyle = GameUITheme.CreateButtonStyle(14);
-        languageButtonStyle.normal.background = null;
-        languageButtonStyle.hover.background = null;
-        languageButtonStyle.active.background = null;
+        selectionPanelStyle = GameUITheme.CreatePanelStyle();
+        selectionCardStyle = GameUITheme.CreatePanelStyle(GameUITheme.WarmCream, GameUITheme.DeepGreen);
+        languageOptionPanelStyle = GameUITheme.CreatePanelStyle(GameUITheme.ButtonGreen, Color.white);
+        languageSelectedStyle = GameUITheme.CreatePanelStyle(GameUITheme.ChristmasRed, Color.white);
+        languageButtonStyle = GameUITheme.CreateTransparentButtonStyle(GameUITheme.BodyFontSize);
         flagStyle = GameUITheme.CreateLabelStyle(GameUITheme.LanguageFlagFontSize, FontStyle.Normal,
             TextAnchor.MiddleCenter, Color.white);
     }
