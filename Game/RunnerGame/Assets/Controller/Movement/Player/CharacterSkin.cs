@@ -18,6 +18,7 @@ public class CharacterSkin : MonoBehaviour
     private SpriteRenderer characterRenderer;
     private Sprite[] idleFrames;
     private Sprite[] walkFrames;
+    private Collider2D playerCollider;
     private float animationTimer;
     private int currentFrame;
 
@@ -56,6 +57,13 @@ public class CharacterSkin : MonoBehaviour
             return;
         }
 
+        playerCollider = GetComponent<Collider2D>();
+        if (playerCollider == null)
+        {
+            Debug.LogError("Could not find a collider to align the selected character with the ground.");
+            return;
+        }
+
         int sortingLayerId = santaRenderer.sortingLayerID;
         santaVisual.gameObject.SetActive(false);
         Animator animator = GetComponent<Animator>();
@@ -66,10 +74,12 @@ public class CharacterSkin : MonoBehaviour
 
         GameObject visual = new GameObject("Selected Christmas Character");
         visual.transform.SetParent(transform, false);
+        visual.transform.localScale = santaVisual.localScale;
         characterRenderer = visual.AddComponent<SpriteRenderer>();
         characterRenderer.sprite = idleFrames[0];
         characterRenderer.sortingLayerID = sortingLayerId;
         characterRenderer.sortingOrder = 2;
+        AlignCharacterToGround();
     }
 
     /// <summary>
@@ -94,7 +104,19 @@ public class CharacterSkin : MonoBehaviour
             animationTimer = 0f;
             currentFrame = (currentFrame + 1) % frames.Length;
             characterRenderer.sprite = frames[currentFrame];
+            AlignCharacterToGround();
         }
+    }
+
+    /// <summary>
+    /// Aligns the sprite's authored foot pivot with the bottom of the player collider.
+    /// </summary>
+    private void AlignCharacterToGround()
+    {
+        Transform visualTransform = characterRenderer.transform;
+        Vector3 position = visualTransform.position;
+        position.y = playerCollider.bounds.min.y;
+        visualTransform.position = position;
     }
 
     /// <summary>

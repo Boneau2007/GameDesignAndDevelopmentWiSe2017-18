@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Displays the character selector in the main menu and saves the selected character.
@@ -9,6 +10,11 @@ public class CharacterSelectionMenu : MonoBehaviour
     /// PlayerPrefs key used to persist the selected character index.
     /// </summary>
     public const string PreferenceKey = "SelectedChristmasCharacter";
+
+    /// <summary>
+    /// Sprite used to preview Santa, the default character.
+    /// </summary>
+    public Sprite santaPreview;
 
     private static readonly string[] CharacterNames =
     {
@@ -31,6 +37,7 @@ public class CharacterSelectionMenu : MonoBehaviour
     private int selectedCharacter;
     private Sprite previewSprite;
     private GameObject mainMenuPanel;
+    private bool selectingCharacter;
 
     /// <summary>
     /// Loads the saved selection and locates the main-menu panel.
@@ -39,50 +46,114 @@ public class CharacterSelectionMenu : MonoBehaviour
     {
         selectedCharacter = Mathf.Clamp(PlayerPrefs.GetInt(PreferenceKey, 0), 0, CharacterNames.Length - 1);
         mainMenuPanel = GameObject.Find("MainMenuPanel");
+        selectingCharacter = false;
         UpdatePreview();
     }
 
     /// <summary>
-    /// Draws the character preview, description, and selection buttons.
+    /// Opens character selection after the main menu's Start button is clicked.
+    /// </summary>
+    public void BeginSelection()
+    {
+        selectingCharacter = true;
+        if (mainMenuPanel != null)
+        {
+            mainMenuPanel.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Draws the character selection screen after the player chooses Start.
     /// </summary>
     private void OnGUI()
     {
-        if (mainMenuPanel == null || !mainMenuPanel.activeInHierarchy)
+        if (!selectingCharacter)
         {
             return;
         }
 
-        float panelWidth = Mathf.Min(300f, Screen.width - 24f);
-        float panelHeight = 190f;
-        float x = Screen.width - panelWidth - 12f;
-        const float y = 12f;
+        float panelWidth = Mathf.Min(360f, Screen.width - 24f);
+        const float panelHeight = 260f;
+        float x = (Screen.width - panelWidth) * 0.5f;
+        float y = (Screen.height - panelHeight) * 0.5f;
 
         GUI.Box(new Rect(x, y, panelWidth, panelHeight), string.Empty);
-        GUI.Label(new Rect(x + 12f, y + 8f, panelWidth - 24f, 24f), "CHOOSE YOUR RUNNER");
+        GUI.Label(new Rect(x + 12f, y + 10f, panelWidth - 24f, 24f), "CHOOSE YOUR RUNNER");
 
         if (previewSprite != null)
         {
-            GUI.DrawTexture(new Rect(x + 16f, y + 42f, 80f, 80f), previewSprite.texture, ScaleMode.ScaleToFit, true);
+            Rect spriteRect = previewSprite.textureRect;
+            float aspectRatio = spriteRect.width / spriteRect.height;
+            float previewWidth = 88f;
+            float previewHeight = 88f;
+            if (aspectRatio < 1f)
+            {
+                previewWidth *= aspectRatio;
+            }
+            else
+            {
+                previewHeight /= aspectRatio;
+            }
+
+            Rect previewRect = new Rect(
+                x + 24f + (88f - previewWidth) * 0.5f,
+                y + 46f + (88f - previewHeight) * 0.5f,
+                previewWidth,
+                previewHeight);
+            Rect textureCoordinates = new Rect(
+                spriteRect.x / previewSprite.texture.width,
+                spriteRect.y / previewSprite.texture.height,
+                spriteRect.width / previewSprite.texture.width,
+                spriteRect.height / previewSprite.texture.height);
+            GUI.DrawTextureWithTexCoords(previewRect, previewSprite.texture, textureCoordinates, true);
         }
         else
         {
-            GUI.Box(new Rect(x + 16f, y + 42f, 80f, 80f), "Santa");
+            GUI.Box(new Rect(x + 24f, y + 46f, 88f, 88f), "Santa");
         }
 
-        GUI.Label(new Rect(x + 106f, y + 48f, panelWidth - 118f, 28f), CharacterNames[selectedCharacter]);
-        GUI.Label(new Rect(x + 106f, y + 78f, panelWidth - 118f, 54f), CharacterDescriptions[selectedCharacter]);
+        GUI.Label(new Rect(x + 126f, y + 54f, panelWidth - 150f, 28f), CharacterNames[selectedCharacter]);
+        GUI.Label(new Rect(x + 126f, y + 84f, panelWidth - 150f, 54f), CharacterDescriptions[selectedCharacter]);
 
         float buttonWidth = (panelWidth - 24f) / CharacterNames.Length;
         for (int i = 0; i < CharacterNames.Length; i++)
         {
             string label = i == selectedCharacter ? "[" + (i + 1) + "]" : (i + 1).ToString();
-            if (GUI.Button(new Rect(x + 12f + buttonWidth * i, y + 137f, buttonWidth - 3f, 28f), label))
+            if (GUI.Button(new Rect(x + 12f + buttonWidth * i, y + 154f, buttonWidth - 3f, 30f), label))
             {
                 SelectCharacter(i);
             }
         }
 
-        GUI.Label(new Rect(x + 12f, y + 166f, panelWidth - 24f, 18f), "Select a number or use the buttons.");
+        if (GUI.Button(new Rect(x + 12f, y + 202f, panelWidth * 0.5f - 18f, 36f), "Start Run"))
+        {
+            StartRun();
+        }
+        if (GUI.Button(new Rect(x + panelWidth * 0.5f + 6f, y + 202f, panelWidth * 0.5f - 18f, 36f), "Back"))
+        {
+            ReturnToMainMenu();
+        }
+        GUI.Label(new Rect(x + 12f, y + 238f, panelWidth - 24f, 18f), "Select a number or use the buttons.");
+    }
+
+    /// <summary>
+    /// Loads the gameplay scene using the saved character selection.
+    /// </summary>
+    private void StartRun()
+    {
+        SceneManager.LoadScene("world");
+    }
+
+    /// <summary>
+    /// Closes character selection and returns to the main menu panel.
+    /// </summary>
+    private void ReturnToMainMenu()
+    {
+        selectingCharacter = false;
+        if (mainMenuPanel != null)
+        {
+            mainMenuPanel.SetActive(true);
+        }
     }
 
     /// <summary>
@@ -103,7 +174,7 @@ public class CharacterSelectionMenu : MonoBehaviour
     private void UpdatePreview()
     {
         previewSprite = selectedCharacter == 0
-            ? null
+            ? santaPreview
             : Resources.Load<Sprite>("ChristmasCharacters/" +
                                      GetResourceName(selectedCharacter) + "_Idle_0");
     }
@@ -126,11 +197,11 @@ public class CharacterSelectionMenu : MonoBehaviour
     }
 
     /// <summary>
-    /// Handles numeric keyboard shortcuts while the main-menu panel is active.
+    /// Handles numeric keyboard shortcuts while character selection is open.
     /// </summary>
     private void Update()
     {
-        if (mainMenuPanel == null || !mainMenuPanel.activeInHierarchy)
+        if (!selectingCharacter)
         {
             return;
         }

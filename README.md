@@ -10,7 +10,7 @@ Santa's Christmas Run is a 2D endless-runner prototype. After delivering the pre
 
 The repository includes a prebuilt Windows version in `Game/`. To start it, run `Game/RunnerGame.exe`. The executable is an earlier build; rebuild the Unity project with its documented Unity 2017.2.0f3 editor version to include the new characters.
 
-Choose Santa or one of four additional Christmas characters from the selector in the main menu: Peppermint Elf, Snowflake Scout, Gingerbread Runner, and Reindeer Dash. Click a character number or press `1`–`5`; your choice is saved for the next run. The new characters have separate idle and running animations.
+Click **Start** in the main menu to open character selection in that same scene. Choose Santa or one of four additional Christmas characters—Peppermint Elf, Snowflake Scout, Gingerbread Runner, or Reindeer Dash—using the character buttons or `1`–`5`, then select **Start Run**. Your choice is saved for the next run. The additional characters have separate idle and running animations.
 
 | Action | Controls |
 | --- | --- |
@@ -28,6 +28,10 @@ Holding the jump button is designed to produce a higher jump than a brief press.
 The central design goal is procedural platform generation: the route is assembled as the player runs, with different platform arrangements and gaps to navigate. The design documents describe increasing difficulty over time and a snowy setting. Collectibles, enemies, and additional settings appear in the broader concept, but some are identified as future or lower-priority features; their availability in the included build is not guaranteed.
 
 The prototype presentation describes a platform-selection approach that considers the previous platform and its height, then chooses a neighboring placement or a gap. Treat this as design documentation rather than a guarantee that every planned mechanic is present in the shipped executable.
+
+## Adding character sprites
+
+Put each animation frame in `Game/RunnerGame/Assets/Resources/ChristmasCharacters/` using the existing character and animation filename pattern. In Unity's Sprite Editor, set each frame's custom pivot at the character's foot-contact line, excluding any translucent shadow beneath the feet. The runtime aligns this pivot to the player collider, so frames can use different image sizes and pixel densities without moving the character off the ground. Keep the pivot at the same physical foot baseline across all frames of a character to prevent animation bounce.
 
 ## Repository contents
 
