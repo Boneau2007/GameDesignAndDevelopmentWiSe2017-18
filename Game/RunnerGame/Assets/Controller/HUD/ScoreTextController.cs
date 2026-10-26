@@ -32,6 +32,6 @@ public class ScoreTextController : MonoBehaviour {
 	/// Writes the current score to the HUD text element.
 	/// </summary>
 	void showScore() {
-		scoreTextObject.text = "Score: " + gm.getScore ();
+		scoreTextObject.text = Localization.Format ("hud.score", gm.getScore ());
 	}
 }

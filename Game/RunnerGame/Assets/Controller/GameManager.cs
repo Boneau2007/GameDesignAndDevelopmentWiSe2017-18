@@ -96,7 +96,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Draws the pause menu or the game-over controls using Unity's immediate-mode GUI.
+	/// Draws the pause menu using Unity's immediate-mode GUI.
 	/// </summary>
 	private void OnGUI () {
 	    if (paused) {
@@ -104,31 +104,15 @@ public class GameManager : MonoBehaviour {
 	    	float panelHeight = 190f;
 	    	float x = (Screen.width - panelWidth) * 0.5f;
 	    	float y = (Screen.height - panelHeight) * 0.5f;
-	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), "PAUSED");
-	    	GUI.Label (new Rect (x + 20f, y + 42f, panelWidth - 40f, 24f), "Press Esc to continue");
-	    	if (GUI.Button (new Rect (x + 20f, y + 78f, panelWidth - 40f, 30f), "Continue")) {
+	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), Localization.Get ("pause.title"));
+	    	GUI.Label (new Rect (x + 20f, y + 42f, panelWidth - 40f, 24f), Localization.Get ("pause.continue.hint"));
+	    	if (GUI.Button (new Rect (x + 20f, y + 78f, panelWidth - 40f, 30f), Localization.Get ("pause.continue"))) {
 	    		ResumeGame ();
 	    	}
-	    	if (GUI.Button (new Rect (x + 20f, y + 114f, panelWidth - 40f, 30f), "Restart run")) {
+	    	if (GUI.Button (new Rect (x + 20f, y + 114f, panelWidth - 40f, 30f), Localization.Get ("pause.restart"))) {
 	    		RestartRun ();
 	    	}
-	    	if (GUI.Button (new Rect (x + 20f, y + 150f, panelWidth - 40f, 30f), "Main menu")) {
-	    		ReturnToMainMenu ();
-	    	}
-	    } else if (gameOverHandled) {
-	    	float panelWidth = 360f;
-	    	float panelHeight = 86f;
-	    	float x = (Screen.width - panelWidth) * 0.5f;
-	    	float y = Screen.height - panelHeight - 18f;
-	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), string.Empty);
-	    	int highScore = PlayerPrefs.GetInt (HighScoreKey, 0);
-	    	string message = achievedNewHighScore ? "New best! " : "Best: ";
-	    	GUI.Label (new Rect (x + 12f, y + 8f, panelWidth - 24f, 20f),
-	    		message + highScore + " points");
-	    	if (GUI.Button (new Rect (x + 12f, y + 42f, 160f, 30f), "Restart (R)")) {
-	    		RestartRun ();
-	    	}
-	    	if (GUI.Button (new Rect (x + 188f, y + 42f, 160f, 30f), "Main menu (M)")) {
+	    	if (GUI.Button (new Rect (x + 20f, y + 150f, panelWidth - 40f, 30f), Localization.Get ("pause.menu"))) {
 	    		ReturnToMainMenu ();
 	    	}
 	    }
@@ -271,13 +255,13 @@ public class GameManager : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Ends the run, records a new high score if applicable, and displays the game-over canvas.
+	/// Ends and freezes the run, records a new high score if applicable, and displays the existing game-over canvas.
 	/// </summary>
 	private void HandleGameOver () {
 		gameOverHandled = true;
 		started = false;
 		paused = false;
-		Time.timeScale = 1f;
+		Time.timeScale = 0f;
 		int score = getScore ();
 		int highScore = PlayerPrefs.GetInt (HighScoreKey, 0);
 		achievedNewHighScore = score > highScore;
@@ -287,6 +271,10 @@ public class GameManager : MonoBehaviour {
 		}
 		if (gameOverCanvas != null) {
 			gameOverCanvas.enabled = true;
+		}
+		GameOverCanvasController gameOverController = GetComponent<GameOverCanvasController> ();
+		if (gameOverController != null) {
+			gameOverController.ShowResults (score, getDistance (), achievedNewHighScore);
 		}
 	}
 

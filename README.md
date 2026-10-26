@@ -12,6 +12,8 @@ The repository includes a prebuilt Windows version in `Game/`. To start it, run 
 
 Click **Start** in the main menu to open character selection in that same scene. Choose Santa or one of four additional Christmas characters—Peppermint Elf, Snowflake Scout, Gingerbread Runner, or Reindeer Dash—using the character buttons or `1`–`5`, then select **Start Run**. Your choice is saved for the next run. The additional characters have separate idle and running animations.
 
+Choose a language from the flag buttons in the main menu. German, English, and French are included; the selected language is saved between runs and used by the menus, pause screen, game-over screen, and HUD. The selector discovers language bundles automatically.
+
 | Action | Controls |
 | --- | --- |
 | Jump | `Space` or `Up Arrow` |
@@ -32,6 +34,23 @@ The prototype presentation describes a platform-selection approach that consider
 ## Adding character sprites
 
 Put each animation frame in `Game/RunnerGame/Assets/Resources/ChristmasCharacters/` using the existing character and animation filename pattern. In Unity's Sprite Editor, set each frame's custom pivot at the character's foot-contact line, excluding any translucent shadow beneath the feet. The runtime aligns this pivot to the player collider, so frames can use different image sizes and pixel densities without moving the character off the ground. Keep the pivot at the same physical foot baseline across all frames of a character to prevent animation bounce.
+
+## Adding a language or translation
+
+Translations use JSON because Unity can load JSON text assets directly from `Resources` without an extra parser dependency. To add a selectable language, add a `<code>.json` file to `Game/RunnerGame/Assets/Resources/Localization/`; no C# changes are needed. Each bundle contains its own metadata and translations:
+
+```json
+{
+  "languageCode": "es",
+  "displayName": "Español",
+  "flag": "🇪🇸",
+  "entries": [
+    { "key": "menu.start", "value": "Jugar" }
+  ]
+}
+```
+
+Use a unique language code, a display name, a Unicode flag, and an `entries` array of `{ "key": "...", "value": "..." }` objects. Add translations for the same keys used by the other bundles; missing entries fall back to English when available, otherwise to the first discovered language. Use `Localization.Get("your.key")` for fixed text and `Localization.Format("your.key", value)` for text with numbered placeholders such as `{0}`. The bundle is loaded from Unity's `Resources` at runtime, so it will be included in player builds when the project is built.
 
 ## Repository contents
 

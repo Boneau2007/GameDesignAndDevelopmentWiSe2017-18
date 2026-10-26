@@ -33,6 +33,6 @@ public class LifepointViewController : MonoBehaviour {
 	/// Writes the current life-point count to the HUD text element.
 	/// </summary>
 	void ShowLifePoints() {
-		lifepointsObject.text = "Lifepoints: " + gm.getPlayerLifePoints ();
+		lifepointsObject.text = Localization.Format ("hud.lives", gm.getPlayerLifePoints ());
 	}
 }
