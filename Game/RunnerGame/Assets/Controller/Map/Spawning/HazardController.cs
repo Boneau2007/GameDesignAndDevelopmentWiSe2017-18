@@ -26,7 +26,7 @@ public class HazardController : MonoBehaviour
     /// </summary>
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        gameManager = FindAnyObjectByType<GameManager>();
         //Random.InitState((int)Time.time);
     }
 

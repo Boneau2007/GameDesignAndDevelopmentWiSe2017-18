@@ -27,7 +27,7 @@ public class CameraController : MonoBehaviour {
     /// Finds the game manager and initializes camera movement settings.
     /// </summary>
     void Start () {
-		gameManager = FindObjectOfType<GameManager> ();
+		gameManager = FindAnyObjectByType<GameManager> ();
 		myCamera = GetComponent<Rigidbody2D> ();
 		toggleCameraMovement (false);
 		speedMultiplier = 1f;

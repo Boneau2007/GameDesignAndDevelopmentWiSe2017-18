@@ -6,6 +6,7 @@ using UnityEngine;
 /// Generates platforms and hazard blocks ahead of the player.
 /// </summary>
 public class PlatformGenerator : MonoBehaviour {
+	private const float HazardSectionStep = 1f;
 
 	/// <summary>
 	/// Default platform prefab.
@@ -56,7 +57,24 @@ public class PlatformGenerator : MonoBehaviour {
 	/// Most recently selected platform prefab.
 	/// </summary>
 	public GameObject lastPlatform; 
-	//public ObjectPooler theObjectPool; 
+	private ObjectPooler theObjectPool;
+
+	/// <summary>
+	/// Creates or configures the shared pool before platform generation begins.
+	/// </summary>
+	void Awake () {
+		theObjectPool = GetComponent<ObjectPooler> ();
+		if (theObjectPool == null) {
+			theObjectPool = gameObject.AddComponent<ObjectPooler> ();
+		}
+
+		List<GameObject> platformPrefabs = new List<GameObject> ();
+		platformPrefabs.AddRange (thePlatforms);
+		platformPrefabs.AddRange (lavaPlatforms);
+		platformPrefabs.AddRange (icePlatforms);
+		theObjectPool.InitializePools (platformPrefabs, ObjectPooler.InitialPlatformPoolSize);
+	}
+
 	/// <summary>
 	/// Allocates platform-width storage for the configured platform prefabs.
 	/// </summary>
@@ -83,7 +101,7 @@ public class PlatformGenerator : MonoBehaviour {
 				} else {
 					transform.position = new Vector3 (transform.position.x + distanceBetween, transform.position.y, 0);
 				}
-				Instantiate (thePlatforms[platformSelector], transform.position, transform.rotation);
+				theObjectPool.SpawnPooledObject (thePlatforms[platformSelector], transform.position, transform.rotation);
 				lastPlatform = thePlatforms[platformSelector];
 
 			} else {
@@ -136,8 +154,8 @@ public class PlatformGenerator : MonoBehaviour {
 		}
 		int t = Random.Range (1, 3);
 		for (; t < 3; t++) {
-			transform.position = new Vector3 (transform.position.x + 1, transform.position.y, 0);
-			Instantiate (lavaPlatforms [selectLava - 1], transform.position, transform.rotation);
+			transform.position = new Vector3 (transform.position.x + HazardSectionStep, transform.position.y, 0);
+			theObjectPool.SpawnPooledObject (lavaPlatforms [selectLava - 1], transform.position, transform.rotation);
 		}
 		lastPlatform = lavaPlatforms [selectLava-1];
 	}
@@ -154,8 +172,8 @@ public class PlatformGenerator : MonoBehaviour {
 		if(chooseBlockHeight == 1 && selectPlatform < 5  ){
 			selectPlatform++;	
 		}
-		transform.position = new Vector3 (transform.position.x + 1, transform.position.y, 0); 
-		Instantiate (thePlatforms[selectPlatform-1], transform.position, transform.rotation);
+		transform.position = new Vector3 (transform.position.x + HazardSectionStep, transform.position.y, 0); 
+		theObjectPool.SpawnPooledObject (thePlatforms[selectPlatform-1], transform.position, transform.rotation);
 		lastPlatform = thePlatforms[selectPlatform-1];
 	}
 
@@ -179,8 +197,8 @@ public class PlatformGenerator : MonoBehaviour {
 		}
 		int t = Random.Range (1, 4);
 		for (; t < 4; t++) {
-			transform.position = new Vector3 (transform.position.x + 1, transform.position.y, 0);
-			Instantiate (icePlatforms [selectIce - 1], transform.position, transform.rotation);
+			transform.position = new Vector3 (transform.position.x + HazardSectionStep, transform.position.y, 0);
+			theObjectPool.SpawnPooledObject (icePlatforms [selectIce - 1], transform.position, transform.rotation);
 		}
 		lastPlatform = icePlatforms [selectIce-1];
 	}

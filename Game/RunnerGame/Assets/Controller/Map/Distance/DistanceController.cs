@@ -26,7 +26,7 @@ public class DistanceController : MonoBehaviour
     {
         if (gameManager == null)
         {
-            gameManager = FindObjectOfType<GameManager>();
+			gameManager = FindAnyObjectByType<GameManager>();
         }
     }
 

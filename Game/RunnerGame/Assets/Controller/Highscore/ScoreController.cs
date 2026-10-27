@@ -22,7 +22,7 @@ public class ScoreController : MonoBehaviour {
 	/// Finds the game manager used to read the run state.
 	/// </summary>
 	void Start () {
-		gameManager = FindObjectOfType<GameManager> ();
+		gameManager = FindAnyObjectByType<GameManager> ();
 	}
 	
 	/// <summary>

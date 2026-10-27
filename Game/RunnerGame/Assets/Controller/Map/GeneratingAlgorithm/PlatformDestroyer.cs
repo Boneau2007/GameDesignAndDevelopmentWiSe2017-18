@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Removes platforms after they pass the platform destruction point.
+/// Recycles generated objects after they pass the platform destruction point.
 /// </summary>
 public class PlatformDestroyer : MonoBehaviour {
+	private ObjectPooler objectPooler;
 
 	/// <summary>
 	/// Transform marker behind which platforms are destroyed.
@@ -21,13 +22,21 @@ public class PlatformDestroyer : MonoBehaviour {
 	}
 	
 	/// <summary>
-	/// Destroys this platform when it passes the destruction marker.
+	/// Returns this object to its pool when it passes the destruction marker.
 	/// </summary>
 	void Update () {
 		if(transform.position.x < platformDestructionPoint.transform.position.x){
-			Destroy (gameObject);
-			//gameObject.SetActive (false);
+			if (objectPooler == null || !objectPooler.ReturnPooledObject (gameObject)) {
+				Destroy (gameObject);
+			}
 		}
+	}
+
+	/// <summary>
+	/// Associates a generated platform with the pool that should receive it when recycled.
+	/// </summary>
+	public void SetObjectPooler(ObjectPooler pooler) {
+		objectPooler = pooler;
 	}
 
 }

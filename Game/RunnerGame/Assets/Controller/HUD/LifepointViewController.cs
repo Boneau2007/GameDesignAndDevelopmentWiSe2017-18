@@ -19,7 +19,7 @@ public class LifepointViewController : MonoBehaviour {
 	/// Finds the game manager that provides the player's life-point count.
 	/// </summary>
 	void Start () {
-		gm = FindObjectOfType<GameManager> ();
+		gm = FindAnyObjectByType<GameManager> ();
 	}
 	
 	/// <summary>

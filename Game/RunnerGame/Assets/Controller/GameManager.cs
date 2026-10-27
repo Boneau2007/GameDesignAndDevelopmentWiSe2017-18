@@ -46,12 +46,12 @@ public class GameManager : MonoBehaviour {
 	/// Finds the scene's gameplay components and initializes the run state.
 	/// </summary>
 	void Start () {
-		cameraController = FindObjectOfType<CameraController> ();
-		playerController = FindObjectOfType<PlayerController> ();
-		scoreController = FindObjectOfType<ScoreController> ();
-		platformGenerator = FindObjectOfType<PlatformGenerator> ();
-	    distanceController = FindObjectOfType<DistanceController>();
-		hazardController = FindObjectOfType<HazardController>();
+		cameraController = FindAnyObjectByType<CameraController> ();
+		playerController = FindAnyObjectByType<PlayerController> ();
+		scoreController = FindAnyObjectByType<ScoreController> ();
+		platformGenerator = FindAnyObjectByType<PlatformGenerator> ();
+	    distanceController = FindAnyObjectByType<DistanceController>();
+		hazardController = FindAnyObjectByType<HazardController>();
 	    GameObject hudObject = GameObject.Find("HUD");
 	    if (hudObject != null) {
 	    	GameUITheme.ConfigureGameplayCanvas(hudObject.transform);

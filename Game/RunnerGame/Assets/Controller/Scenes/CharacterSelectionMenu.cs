@@ -65,7 +65,7 @@ public class CharacterSelectionMenu : MonoBehaviour
         availableLanguages = Localization.AvailableLanguages;
         menuCanvas = mainMenuPanel != null
             ? mainMenuPanel.GetComponentInParent<Canvas>()
-            : FindObjectOfType<Canvas>();
+            : FindAnyObjectByType<Canvas>();
         if (menuCanvas != null)
         {
             GameUITheme.ConfigureMenuCanvas(menuCanvas.transform);
@@ -209,7 +209,7 @@ public class CharacterSelectionMenu : MonoBehaviour
 
     private void CaptureMainMenuTexts()
     {
-        Text[] sceneTexts = FindObjectsOfType<Text>(true);
+        Text[] sceneTexts = FindObjectsByType<Text>(FindObjectsInactive.Include);
         foreach (Text text in sceneTexts)
         {
             string key = GetMainMenuTextKey(text.text);

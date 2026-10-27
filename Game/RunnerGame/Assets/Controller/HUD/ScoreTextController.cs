@@ -16,7 +16,7 @@ public class ScoreTextController : MonoBehaviour {
 	/// Finds the game manager that provides the current score.
 	/// </summary>
 	void Start () {
-		gm = FindObjectOfType<GameManager> ();
+		gm = FindAnyObjectByType<GameManager> ();
 		if (scoreTextObject == null)
 		{
 			scoreTextObject = GetComponent<Text>();

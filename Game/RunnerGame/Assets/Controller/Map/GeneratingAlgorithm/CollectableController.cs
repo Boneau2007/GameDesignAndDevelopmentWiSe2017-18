@@ -19,8 +19,8 @@ public class CollectableController : MonoBehaviour {
 	/// <summary>
 	/// Chooses whether to spawn a collectible and selects its prefab.
 	/// </summary>
-	void Start () {
-		gameManger = FindObjectOfType<GameManager> (); 
+	void OnEnable () {
+		gameManger = FindAnyObjectByType<GameManager> (); 
 
 		int spawnChance = Random.Range (0, 11);
 		if (spawnChance < 4) {
