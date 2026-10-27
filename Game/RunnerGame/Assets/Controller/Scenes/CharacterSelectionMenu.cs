@@ -37,6 +37,8 @@ public class CharacterSelectionMenu : MonoBehaviour
         "selection.description.reindeer"
     };
 
+    private readonly string[] localizedCharacterNames = new string[CharacterNames.Length];
+    private readonly string[] localizedCharacterDescriptions = new string[CharacterDescriptions.Length];
     private readonly Dictionary<Text, string> menuTexts = new Dictionary<Text, string>();
     private int selectedCharacter;
     private Sprite previewSprite;
@@ -45,21 +47,6 @@ public class CharacterSelectionMenu : MonoBehaviour
     private Text menuLanguageText;
     private bool selectingCharacter;
     private bool showingLanguageSelector;
-    private GUIStyle titleStyle;
-    private GUIStyle characterNameStyle;
-    private GUIStyle descriptionStyle;
-    private GUIStyle optionButtonStyle;
-    private GUIStyle actionButtonStyle;
-    private GUIStyle footerStyle;
-    private GUIStyle languageTitleStyle;
-    private GUIStyle selectionPanelStyle;
-    private GUIStyle selectionCardStyle;
-    private GUIStyle languagePanelStyle;
-    private GUIStyle languageOptionPanelStyle;
-    private GUIStyle languageButtonStyle;
-    private GUIStyle languageSelectedStyle;
-    private GUIStyle languageNameStyle;
-    private GUIStyle flagStyle;
     private IReadOnlyList<Localization.LanguageOption> availableLanguages;
     private Vector2 languageScrollPosition;
     private int lastMenuScreenWidth;
@@ -116,7 +103,6 @@ public class CharacterSelectionMenu : MonoBehaviour
     /// </summary>
     private void OnGUI()
     {
-        EnsureStyles();
         if (showingLanguageSelector && !selectingCharacter)
         {
             DrawLanguageSelector();
@@ -128,160 +114,18 @@ public class CharacterSelectionMenu : MonoBehaviour
             return;
         }
 
-        float panelWidth = Mathf.Min(360f, Screen.width - 24f);
-        const float panelHeight = 260f;
-        float x = (Screen.width - panelWidth) * 0.5f;
-        float y = (Screen.height - panelHeight) * 0.5f;
-
-        Color previousBackgroundColor = GUI.backgroundColor;
-        GUI.backgroundColor = Color.white;
-        GUI.Box(new Rect(x, y, panelWidth, panelHeight), string.Empty, selectionPanelStyle);
-        GUI.Box(new Rect(x + 12f, y + 42f, panelWidth - 24f, 106f), string.Empty, selectionCardStyle);
-        GUI.Label(new Rect(x + 12f, y + 10f, panelWidth - 24f, 24f),
-            Localization.Get("selection.title"), titleStyle);
-
-        if (previewSprite != null)
-        {
-            Rect spriteRect = previewSprite.textureRect;
-            float aspectRatio = spriteRect.width / spriteRect.height;
-            float previewWidth = 88f;
-            float previewHeight = 88f;
-            if (aspectRatio < 1f)
-            {
-                previewWidth *= aspectRatio;
-            }
-            else
-            {
-                previewHeight /= aspectRatio;
-            }
-
-            Rect previewRect = new Rect(
-                x + 24f + (88f - previewWidth) * 0.5f,
-                y + 46f + (88f - previewHeight) * 0.5f,
-                previewWidth,
-                previewHeight);
-            Rect textureCoordinates = new Rect(
-                spriteRect.x / previewSprite.texture.width,
-                spriteRect.y / previewSprite.texture.height,
-                spriteRect.width / previewSprite.texture.width,
-                spriteRect.height / previewSprite.texture.height);
-            GUI.DrawTextureWithTexCoords(previewRect, previewSprite.texture, textureCoordinates, true);
-        }
-        else
-        {
-            GUI.Label(new Rect(x + 24f, y + 46f, 88f, 88f),
-                Localization.Get("selection.character.santa"), characterNameStyle);
-        }
-
-        GUI.Label(new Rect(x + 126f, y + 54f, panelWidth - 150f, 28f),
-            Localization.Get(CharacterNames[selectedCharacter]), characterNameStyle);
-        GUI.Label(new Rect(x + 126f, y + 84f, panelWidth - 150f, 54f),
-            Localization.Get(CharacterDescriptions[selectedCharacter]), descriptionStyle);
-
-        float buttonGap = GameUITheme.ItemSpacing;
-        float buttonWidth = (panelWidth - 24f - buttonGap * (CharacterNames.Length - 1)) /
-                            CharacterNames.Length;
-        for (int i = 0; i < CharacterNames.Length; i++)
-        {
-            string label = i == selectedCharacter ? "[" + (i + 1) + "]" : (i + 1).ToString();
-            GUI.backgroundColor = i == selectedCharacter ? GameUITheme.ChristmasRed : GameUITheme.ButtonGreen;
-            if (GUI.Button(new Rect(x + 12f + (buttonWidth + buttonGap) * i, y + 154f,
-                    buttonWidth, 30f), label,
-                    optionButtonStyle))
-            {
-                SelectCharacter(i);
-            }
-        }
-
-        GUI.backgroundColor = GameUITheme.ChristmasRed;
-        if (GUI.Button(new Rect(x + 12f, y + 202f, panelWidth * 0.5f - 18f, 36f),
-                Localization.Get("selection.start"), actionButtonStyle))
-        {
-            StartRun();
-        }
-        GUI.backgroundColor = GameUITheme.ButtonGreen;
-        if (GUI.Button(new Rect(x + panelWidth * 0.5f + 6f, y + 202f, panelWidth * 0.5f - 18f, 36f),
-                Localization.Get("menu.back"),
-                actionButtonStyle))
-        {
-            ReturnToMainMenu();
-        }
-        GUI.backgroundColor = previousBackgroundColor;
-        GUI.Label(new Rect(x + 12f, y + 238f, panelWidth - 24f, 18f),
-            Localization.Get("selection.hint"), footerStyle);
+        GameUITheme.DrawCharacterSelection(selectedCharacter, previewSprite,
+            Localization.Get("selection.title"), localizedCharacterNames, localizedCharacterDescriptions,
+            Localization.Get("selection.start"), Localization.Get("menu.back"),
+            Localization.Get("selection.hint"), SelectCharacter, StartRun, ReturnToMainMenu);
     }
 
     private void DrawLanguageSelector()
     {
-        if (availableLanguages == null || availableLanguages.Count == 0)
-        {
-            return;
-        }
-
-        const float buttonHeight = 62f;
-        const float buttonGap = GameUITheme.ItemSpacing;
-        const float panelPadding = 8f;
-        int columns = Mathf.Min(3, availableLanguages.Count);
-        int rows = Mathf.CeilToInt(availableLanguages.Count / (float)columns);
-        float contentHeight = rows * buttonHeight + (rows - 1) * buttonGap;
-        float maxPanelHeight = Mathf.Max(100f, Screen.height - 24f);
-        bool needsScroll = 76f + contentHeight > maxPanelHeight;
-        float buttonWidth = Mathf.Min(92f,
-            (Screen.width - panelPadding * 2f - 16f - (needsScroll ? 16f : 0f) -
-             buttonGap * (columns - 1)) / columns);
-        buttonWidth = Mathf.Max(54f, buttonWidth);
-        float panelWidth = panelPadding * 2f + buttonWidth * columns + buttonGap * (columns - 1) +
-                           (needsScroll ? 16f : 0f);
-        float panelHeight = Mathf.Min(76f + contentHeight, maxPanelHeight);
-        float x = (Screen.width - panelWidth) * 0.5f;
-        float y = (Screen.height - panelHeight) * 0.5f;
-
-        Color oldBackground = GUI.backgroundColor;
-        GUI.backgroundColor = Color.white;
-        GUI.Box(new Rect(x, y, panelWidth, panelHeight), string.Empty, languagePanelStyle);
-        GUI.Label(new Rect(x + panelPadding, y + 1f, panelWidth - panelPadding * 2f, 24f),
-            Localization.Get("language.title"), languageTitleStyle);
-
-        Rect scrollRect = new Rect(x + panelPadding, y + 24f,
-            panelWidth - panelPadding * 2f, panelHeight - 68f);
-        Rect contentRect = new Rect(0f, 0f, scrollRect.width - (needsScroll ? 16f : 0f), contentHeight);
-        languageScrollPosition = GUI.BeginScrollView(
-            scrollRect, languageScrollPosition, contentRect, false, needsScroll);
-        for (int i = 0; i < availableLanguages.Count; i++)
-        {
-            Localization.LanguageOption language = availableLanguages[i];
-            int row = i / columns;
-            int column = i % columns;
-            Rect buttonRect = new Rect(
-                column * (buttonWidth + buttonGap),
-                row * (buttonHeight + buttonGap),
-                buttonWidth,
-                buttonHeight);
-
-            bool isSelected = string.Equals(Localization.CurrentLanguageCode, language.Code,
-                StringComparison.OrdinalIgnoreCase);
-            GUI.backgroundColor = Color.white;
-            GUI.Box(buttonRect, string.Empty, isSelected ? languageSelectedStyle : languageOptionPanelStyle);
-            if (GUI.Button(buttonRect, GUIContent.none, languageButtonStyle))
-            {
-                Localization.SetLanguage(language.Code);
-            }
-
-            GUI.Label(new Rect(buttonRect.x + 3f, buttonRect.y + 2f, buttonRect.width - 6f, 30f),
-                language.Flag, flagStyle);
-            GUI.Label(new Rect(buttonRect.x + 2f, buttonRect.y + 31f, buttonRect.width - 4f, 26f),
-                language.DisplayName, languageNameStyle);
-        }
-        GUI.EndScrollView();
-
-        GUI.backgroundColor = GameUITheme.ButtonGreen;
-        if (GUI.Button(new Rect(x + panelPadding, y + panelHeight - 38f,
-                panelWidth - panelPadding * 2f, 30f), Localization.Get("menu.back"), actionButtonStyle))
-        {
-            ReturnFromLanguageSelector();
-        }
-
-        GUI.backgroundColor = oldBackground;
+        languageScrollPosition = GameUITheme.DrawLanguageSelector(availableLanguages,
+            Localization.CurrentLanguageCode, Localization.Get("language.title"),
+            Localization.Get("menu.back"), languageScrollPosition,
+            code => { Localization.SetLanguage(code); }, ReturnFromLanguageSelector);
     }
 
     private void AddLanguageNavigationButton()
@@ -378,6 +222,12 @@ public class CharacterSelectionMenu : MonoBehaviour
 
     private void ApplyMainMenuLocalization()
     {
+        for (int i = 0; i < CharacterNames.Length; i++)
+        {
+            localizedCharacterNames[i] = Localization.Get(CharacterNames[i]);
+            localizedCharacterDescriptions[i] = Localization.Get(CharacterDescriptions[i]);
+        }
+
         foreach (KeyValuePair<Text, string> entry in menuTexts)
         {
             if (entry.Key != null)
@@ -425,38 +275,6 @@ public class CharacterSelectionMenu : MonoBehaviour
     private void OnDestroy()
     {
         Localization.LanguageChanged -= ApplyMainMenuLocalization;
-    }
-
-    private void EnsureStyles()
-    {
-        if (titleStyle != null)
-        {
-            return;
-        }
-
-        titleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, GameUITheme.EmphasisFontStyle,
-            TextAnchor.MiddleCenter, GameUITheme.WarmCream);
-        characterNameStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize + 4, GameUITheme.EmphasisFontStyle,
-            TextAnchor.MiddleLeft, GameUITheme.DeepGreen);
-        descriptionStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize, GameUITheme.BodyFontStyle,
-            TextAnchor.UpperLeft, GameUITheme.DeepGreen);
-        footerStyle = GameUITheme.CreateLabelStyle(GameUITheme.SmallLabelFontSize, GameUITheme.BodyFontStyle, TextAnchor.MiddleCenter,
-            GameUITheme.WarmCream);
-        languageTitleStyle = GameUITheme.CreateLabelStyle(GameUITheme.PanelTitleFontSize, GameUITheme.EmphasisFontStyle,
-            TextAnchor.MiddleCenter, GameUITheme.WarmCream);
-
-        optionButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.BodyFontSize);
-        actionButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.ButtonFontSize);
-        languagePanelStyle = GameUITheme.CreatePanelStyle();
-        selectionPanelStyle = GameUITheme.CreatePanelStyle();
-        selectionCardStyle = GameUITheme.CreatePanelStyle(GameUITheme.WarmCream, GameUITheme.DeepGreen);
-        languageOptionPanelStyle = GameUITheme.CreatePanelStyle(GameUITheme.ButtonGreen, Color.white);
-        languageSelectedStyle = GameUITheme.CreatePanelStyle(GameUITheme.ChristmasRed, Color.white);
-        languageButtonStyle = GameUITheme.CreateTransparentButtonStyle(GameUITheme.BodyFontSize);
-        languageNameStyle = GameUITheme.CreateLabelStyle(GameUITheme.BodyFontSize, GameUITheme.EmphasisFontStyle,
-            TextAnchor.MiddleCenter, Color.white);
-        flagStyle = GameUITheme.CreateLabelStyle(GameUITheme.LanguageFlagFontSize, GameUITheme.BodyFontStyle,
-            TextAnchor.MiddleCenter, Color.white);
     }
 
     /// <summary>

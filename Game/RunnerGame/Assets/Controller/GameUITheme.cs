@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -20,7 +21,7 @@ public static class GameUITheme
     public const int HudFontSize = 34;
     public const int ResultFontSize = 32;
     public const int SmallLabelFontSize = 14;
-    public const int LanguageFlagFontSize = 30;
+    public const int LanguageFlagFontSize = 24;
     public const int ButtonFontSize = 20;
 
     public static readonly Color ForestGreen = new Color(0.055f, 0.18f, 0.14f, 1f);
@@ -31,6 +32,211 @@ public static class GameUITheme
     public static readonly Color AccentGold = new Color(0.92f, 0.68f, 0.28f, 1f);
     private static readonly Dictionary<Color, Texture2D> GuiTextures = new Dictionary<Color, Texture2D>();
     private static readonly Dictionary<Color, Texture2D> GuiPanelTextures = new Dictionary<Color, Texture2D>();
+    private static GUIStyle characterTitleStyle;
+    private static GUIStyle characterNameStyle;
+    private static GUIStyle characterDescriptionStyle;
+    private static GUIStyle characterOptionButtonStyle;
+    private static GUIStyle characterActionButtonStyle;
+    private static GUIStyle characterFooterStyle;
+    private static GUIStyle characterPanelStyle;
+    private static GUIStyle characterCardStyle;
+    private static GUIStyle languageTitleStyle;
+    private static GUIStyle languagePanelStyle;
+    private static GUIStyle languageButtonStyle;
+    private static GUIStyle languageNameStyle;
+    private static GUIStyle flagStyle;
+    private static GUIStyle pausePanelStyle;
+    private static GUIStyle pauseLabelStyle;
+    private static GUIStyle pauseButtonStyle;
+
+    public static void DrawPauseMenu(string title, string continueHint, string continueLabel,
+        string restartLabel, string menuLabel, UnityAction continueAction, UnityAction restartAction,
+        UnityAction menuAction)
+    {
+        EnsurePauseStyles();
+        float panelWidth = Mathf.Min(300f, Mathf.Max(0f, Screen.width - 24f));
+        float panelHeight = Mathf.Min(190f, Mathf.Max(0f, Screen.height - 24f));
+        float x = (Screen.width - panelWidth) * 0.5f;
+        float y = (Screen.height - panelHeight) * 0.5f;
+
+        DrawPanel(new Rect(x, y, panelWidth, panelHeight), title, pausePanelStyle, Color.white);
+        DrawLabel(new Rect(x + 20f, y + 42f, panelWidth - 40f, 24f), continueHint, pauseLabelStyle);
+        if (DrawButton(new Rect(x + 20f, y + 78f, panelWidth - 40f, 30f),
+                continueLabel, pauseButtonStyle, ChristmasRed))
+        {
+            continueAction();
+        }
+
+        if (DrawButton(new Rect(x + 20f, y + 114f, panelWidth - 40f, 30f),
+                restartLabel, pauseButtonStyle, ButtonGreen))
+        {
+            restartAction();
+        }
+
+        if (DrawButton(new Rect(x + 20f, y + 150f, panelWidth - 40f, 30f),
+                menuLabel, pauseButtonStyle, ButtonGreen))
+        {
+            menuAction();
+        }
+    }
+
+    public static void DrawCharacterSelection(int selectedIndex, Sprite previewSprite, string title,
+        string[] characterNames, string[] characterDescriptions, string startLabel, string backLabel,
+        string hint, Action<int> selectCharacter, UnityAction startRun, UnityAction returnToMenu)
+    {
+        EnsureSelectorStyles();
+        float panelWidth = Mathf.Min(360f, Screen.width - 24f);
+        const float panelHeight = 260f;
+        float x = (Screen.width - panelWidth) * 0.5f;
+        float y = (Screen.height - panelHeight) * 0.5f;
+
+        DrawPanel(new Rect(x, y, panelWidth, panelHeight), characterPanelStyle, Color.white);
+        DrawPanel(new Rect(x + 12f, y + 42f, panelWidth - 24f, 106f), characterCardStyle, Color.white);
+        DrawLabel(new Rect(x + 12f, y + 10f, panelWidth - 24f, 24f), title, characterTitleStyle);
+
+        if (previewSprite != null)
+        {
+            Rect spriteRect = previewSprite.textureRect;
+            float aspectRatio = spriteRect.width / spriteRect.height;
+            float previewWidth = 88f;
+            float previewHeight = 88f;
+            if (aspectRatio < 1f)
+            {
+                previewWidth *= aspectRatio;
+            }
+            else
+            {
+                previewHeight /= aspectRatio;
+            }
+
+            Rect previewRect = new Rect(
+                x + 24f + (88f - previewWidth) * 0.5f,
+                y + 46f + (88f - previewHeight) * 0.5f,
+                previewWidth,
+                previewHeight);
+            Rect textureCoordinates = new Rect(
+                spriteRect.x / previewSprite.texture.width,
+                spriteRect.y / previewSprite.texture.height,
+                spriteRect.width / previewSprite.texture.width,
+                spriteRect.height / previewSprite.texture.height);
+            DrawTextureWithTexCoords(previewRect, previewSprite.texture, textureCoordinates, true);
+        }
+        else
+        {
+            DrawLabel(new Rect(x + 24f, y + 46f, 88f, 88f), characterNames[0], characterNameStyle);
+        }
+
+        DrawLabel(new Rect(x + 126f, y + 54f, panelWidth - 150f, 28f),
+            characterNames[selectedIndex], characterNameStyle);
+        DrawLabel(new Rect(x + 126f, y + 84f, panelWidth - 150f, 54f),
+            characterDescriptions[selectedIndex], characterDescriptionStyle);
+
+        float buttonGap = ItemSpacing;
+        float buttonWidth = (panelWidth - 24f - buttonGap * (characterNames.Length - 1)) /
+                            characterNames.Length;
+        for (int i = 0; i < characterNames.Length; i++)
+        {
+            string label = i == selectedIndex ? "[" + (i + 1) + "]" : (i + 1).ToString();
+            Color buttonColor = i == selectedIndex ? ChristmasRed : ButtonGreen;
+            if (DrawButton(new Rect(x + 12f + (buttonWidth + buttonGap) * i, y + 154f,
+                    buttonWidth, 30f), label, characterOptionButtonStyle, buttonColor))
+            {
+                selectCharacter(i);
+            }
+        }
+
+        if (DrawButton(new Rect(x + 12f, y + 202f, panelWidth * 0.5f - 18f, 36f),
+                startLabel, characterActionButtonStyle, ChristmasRed))
+        {
+            startRun();
+        }
+
+        if (DrawButton(new Rect(x + panelWidth * 0.5f + 6f, y + 202f,
+                panelWidth * 0.5f - 18f, 36f), backLabel, characterActionButtonStyle, ButtonGreen))
+        {
+            returnToMenu();
+        }
+
+        DrawLabel(new Rect(x + 12f, y + 238f, panelWidth - 24f, 18f), hint, characterFooterStyle);
+    }
+
+    public static Vector2 DrawLanguageSelector(IReadOnlyList<Localization.LanguageOption> languages,
+        string currentLanguageCode, string title, string backLabel, Vector2 scrollPosition,
+        Action<string> selectLanguage, UnityAction returnToMenu)
+    {
+        EnsureSelectorStyles();
+        if (languages == null || languages.Count == 0)
+        {
+            return scrollPosition;
+        }
+
+        const float buttonHeight = 82f;
+        const float buttonGap = ItemSpacing;
+        const float panelPadding = ItemPadding * 2f;
+        int columns = Mathf.Min(3, languages.Count);
+        int rows = Mathf.CeilToInt(languages.Count / (float)columns);
+        float contentHeight = rows * buttonHeight + (rows - 1) * buttonGap;
+        float maxPanelHeight = Mathf.Max(100f, Screen.height - 24f);
+        const float titleHeight = 24f;
+        const float backButtonHeight = 30f;
+        float fixedPanelHeight = panelPadding * 2f + titleHeight + backButtonHeight + buttonGap * 2f;
+        bool needsScroll = fixedPanelHeight + contentHeight > maxPanelHeight;
+        float buttonWidth = Mathf.Min(92f,
+            (Screen.width - panelPadding * 2f - 16f - (needsScroll ? 16f : 0f) -
+             buttonGap * (columns - 1)) / columns);
+        buttonWidth = Mathf.Max(54f, buttonWidth);
+        float panelWidth = panelPadding * 2f + buttonWidth * columns + buttonGap * (columns - 1) +
+                           (needsScroll ? 16f : 0f);
+        float panelHeight = Mathf.Min(fixedPanelHeight + contentHeight, maxPanelHeight);
+        float x = (Screen.width - panelWidth) * 0.5f;
+        float y = (Screen.height - panelHeight) * 0.5f;
+
+        DrawPanel(new Rect(x, y, panelWidth, panelHeight), languagePanelStyle, Color.white);
+        DrawLabel(new Rect(x + panelPadding, y + panelPadding,
+                panelWidth - panelPadding * 2f, titleHeight),
+            title, languageTitleStyle);
+
+        Rect scrollRect = new Rect(x + panelPadding, y + panelPadding + titleHeight + buttonGap,
+            panelWidth - panelPadding * 2f, panelHeight - fixedPanelHeight);
+        Rect contentRect = new Rect(0f, 0f, scrollRect.width - (needsScroll ? 16f : 0f), contentHeight);
+        scrollPosition = BeginScrollView(scrollRect, scrollPosition, contentRect, false, needsScroll);
+        for (int i = 0; i < languages.Count; i++)
+        {
+            Localization.LanguageOption language = languages[i];
+            int row = i / columns;
+            int column = i % columns;
+            Rect buttonRect = new Rect(
+                column * (buttonWidth + buttonGap),
+                row * (buttonHeight + buttonGap),
+                buttonWidth,
+                buttonHeight);
+
+            bool isSelected = string.Equals(currentLanguageCode, language.Code,
+                StringComparison.OrdinalIgnoreCase);
+            Color buttonColor = isSelected ? ChristmasRed : ButtonGreen;
+            if (DrawButton(buttonRect, GUIContent.none, languageButtonStyle, buttonColor))
+            {
+                selectLanguage(language.Code);
+            }
+
+            DrawLabel(new Rect(buttonRect.x + ItemPadding, buttonRect.y + ItemPadding,
+                    buttonRect.width - ItemPadding * 2f, 34f),
+                language.Flag, flagStyle);
+            DrawLabel(new Rect(buttonRect.x + ItemPadding, buttonRect.y + 42f,
+                    buttonRect.width - ItemPadding * 2f, 35f),
+                language.DisplayName, languageNameStyle);
+        }
+        EndScrollView();
+
+        if (DrawButton(new Rect(x + panelPadding, y + panelHeight - backButtonHeight - panelPadding,
+                panelWidth - panelPadding * 2f, backButtonHeight), backLabel, characterActionButtonStyle,
+                ButtonGreen))
+        {
+            returnToMenu();
+        }
+
+        return scrollPosition;
+    }
 
     /// <summary>
     /// Creates a label style using the shared UI defaults.
@@ -49,6 +255,47 @@ public static class GameUITheme
         style.active.textColor = color;
         style.focused.textColor = color;
         return style;
+    }
+
+    private static void EnsureSelectorStyles()
+    {
+        if (characterTitleStyle != null)
+        {
+            return;
+        }
+
+        characterTitleStyle = CreateLabelStyle(PanelTitleFontSize, EmphasisFontStyle,
+            TextAnchor.MiddleCenter, WarmCream);
+        characterNameStyle = CreateLabelStyle(BodyFontSize + 4, EmphasisFontStyle,
+            TextAnchor.MiddleLeft, DeepGreen);
+        characterDescriptionStyle = CreateLabelStyle(BodyFontSize, BodyFontStyle,
+            TextAnchor.UpperLeft, DeepGreen);
+        characterFooterStyle = CreateLabelStyle(SmallLabelFontSize, BodyFontStyle,
+            TextAnchor.MiddleCenter, WarmCream);
+        languageTitleStyle = CreateLabelStyle(PanelTitleFontSize, EmphasisFontStyle,
+            TextAnchor.MiddleCenter, WarmCream);
+        characterOptionButtonStyle = CreateButtonStyle(BodyFontSize);
+        characterActionButtonStyle = CreateButtonStyle(ButtonFontSize);
+        languagePanelStyle = CreatePanelStyle();
+        characterPanelStyle = CreatePanelStyle();
+        characterCardStyle = CreatePanelStyle(WarmCream, DeepGreen);
+        languageButtonStyle = CreateButtonStyle(ButtonFontSize);
+        languageNameStyle = CreateLabelStyle(ButtonFontSize, EmphasisFontStyle,
+            TextAnchor.MiddleCenter, Color.white);
+        flagStyle = CreateLabelStyle(LanguageFlagFontSize, BodyFontStyle,
+            TextAnchor.MiddleCenter, Color.white);
+    }
+
+    private static void EnsurePauseStyles()
+    {
+        if (pausePanelStyle != null)
+        {
+            return;
+        }
+
+        pausePanelStyle = CreatePausePanelStyle();
+        pauseLabelStyle = CreateLabelStyle(BodyFontSize, BodyFontStyle, TextAnchor.MiddleCenter, WarmCream);
+        pauseButtonStyle = CreateButtonStyle(ButtonFontSize);
     }
 
     /// <summary>
@@ -82,6 +329,16 @@ public static class GameUITheme
         return CreatePanelStyle(ForestGreen, WarmCream);
     }
 
+    public static GUIStyle CreatePausePanelStyle()
+    {
+        GUIStyle style = CreatePanelStyle();
+        style.fontSize = PanelTitleFontSize;
+        style.fontStyle = EmphasisFontStyle;
+        style.alignment = TextAnchor.UpperCenter;
+        style.normal.textColor = WarmCream;
+        return style;
+    }
+
     public static GUIStyle CreatePanelStyle(Color backgroundColor, Color textColor)
     {
         GUIStyle style = new GUIStyle(GUI.skin.box);
@@ -98,6 +355,85 @@ public static class GameUITheme
         style.active.textColor = textColor;
         style.focused.textColor = textColor;
         return style;
+    }
+
+    public static void DrawPanel(Rect rect, GUIStyle style, Color backgroundColor)
+    {
+        DrawWithBackgroundColor(backgroundColor, () => GUI.Box(rect, string.Empty, style));
+    }
+
+    public static void DrawPanel(Rect rect, string title, GUIStyle style, Color backgroundColor)
+    {
+        DrawWithBackgroundColor(backgroundColor, () => GUI.Box(rect, title, style));
+    }
+
+    public static void DrawLabel(Rect rect, string text, GUIStyle style)
+    {
+        GUI.Label(rect, text, style);
+    }
+
+    public static bool DrawButton(Rect rect, string text, GUIStyle style, Color backgroundColor)
+    {
+        bool clicked = false;
+        DrawWithBackgroundColor(backgroundColor, () => clicked = GUI.Button(rect, text, style));
+        return clicked;
+    }
+
+    public static bool DrawButton(Rect rect, GUIContent content, GUIStyle style, Color backgroundColor)
+    {
+        bool clicked = false;
+        DrawWithBackgroundColor(backgroundColor, () => clicked = GUI.Button(rect, content, style));
+        return clicked;
+    }
+
+    public static Vector2 BeginScrollView(Rect viewRect, Vector2 scrollPosition, Rect contentRect,
+        bool alwaysShowHorizontal, bool alwaysShowVertical)
+    {
+        return GUI.BeginScrollView(viewRect, scrollPosition, contentRect, alwaysShowHorizontal, alwaysShowVertical);
+    }
+
+    public static void EndScrollView()
+    {
+        GUI.EndScrollView();
+    }
+
+    public static void DrawTextureWithTexCoords(Rect rect, Texture texture, Rect textureCoordinates,
+        bool alphaBlend)
+    {
+        GUI.DrawTextureWithTexCoords(rect, texture, textureCoordinates, alphaBlend);
+    }
+
+    public static void ConfigureScoreHud(Transform hud, Text scoreText)
+    {
+        if (hud == null || scoreText == null)
+        {
+            Debug.LogError("A HUD transform and score Text component are required to configure the score panel.");
+            return;
+        }
+
+        scoreText.transform.SetParent(hud, false);
+
+        GameObject panelObject = new GameObject("ScorePanel", typeof(RectTransform), typeof(CanvasRenderer),
+            typeof(Image));
+        panelObject.transform.SetParent(hud, false);
+        panelObject.transform.SetAsLastSibling();
+
+        RectTransform scorePanel = panelObject.GetComponent<RectTransform>();
+        scorePanel.anchorMin = Vector2.one;
+        scorePanel.anchorMax = Vector2.one;
+        scorePanel.pivot = Vector2.one;
+        scorePanel.anchoredPosition = new Vector2(-24f, -24f);
+        scorePanel.sizeDelta = new Vector2(400f, 84f);
+        ConfigurePanel(panelObject.GetComponent<Image>(), ForestGreen);
+
+        scoreText.rectTransform.SetParent(scorePanel, false);
+        ConfigureText(scoreText, new Vector2(376f, 76f), Vector2.zero, HudFontSize,
+            EmphasisFontStyle, WarmCream, TextAnchor.MiddleCenter);
+        scoreText.rectTransform.anchorMin = Vector2.zero;
+        scoreText.rectTransform.anchorMax = Vector2.one;
+        scoreText.rectTransform.offsetMin = new Vector2(12f, ItemPadding);
+        scoreText.rectTransform.offsetMax = new Vector2(-12f, -ItemPadding);
+        scoreText.transform.SetAsLastSibling();
     }
 
     public static GUIStyle CreateTransparentButtonStyle(int fontSize)
@@ -388,6 +724,20 @@ public static class GameUITheme
         return null;
     }
 
+    private static void DrawWithBackgroundColor(Color backgroundColor, UnityAction draw)
+    {
+        Color previousBackgroundColor = GUI.backgroundColor;
+        try
+        {
+            GUI.backgroundColor = backgroundColor;
+            draw();
+        }
+        finally
+        {
+            GUI.backgroundColor = previousBackgroundColor;
+        }
+    }
+
     /// <summary>
     /// Applies the shared gameplay palette to HUD labels and controls without tinting sprite icons.
     /// </summary>
@@ -442,6 +792,101 @@ public static class GameUITheme
         outline.effectColor = AccentGold;
         outline.effectDistance = new Vector2(2f, -2f);
         outline.useGraphicAlpha = true;
+    }
+
+    public static void ConfigureGameOverLayout(Transform panel, Transform summaryPanel, Text titleText,
+        Text scoreText, Text distanceText, Button retryButton, Button quitButton, Button menuButton)
+    {
+        if (panel == null)
+        {
+            Debug.LogError("A game-over panel is required to configure its layout.");
+            return;
+        }
+
+        RectTransform panelRect = panel as RectTransform;
+        Canvas canvas = panel.GetComponentInParent<Canvas>();
+        RectTransform canvasRect = canvas != null ? canvas.transform as RectTransform : null;
+        float scaleFactor = canvas != null ? Mathf.Max(0.01f, canvas.scaleFactor) : 1f;
+        float availableWidth = canvasRect != null && canvasRect.rect.width > 0f
+            ? canvasRect.rect.width
+            : Screen.width / scaleFactor;
+        float availableHeight = canvasRect != null && canvasRect.rect.height > 0f
+            ? canvasRect.rect.height
+            : Screen.height / scaleFactor;
+        float panelWidth = Mathf.Min(620f, Mathf.Max(0f, availableWidth - ItemSpacing * 2f));
+        float panelHeight = Mathf.Min(560f, Mathf.Max(0f, availableHeight - ItemSpacing * 2f));
+        SetRectTransform(panelRect, new Vector2(panelWidth, panelHeight), Vector2.zero);
+
+        VerticalLayoutGroup verticalLayout = panel.GetComponent<VerticalLayoutGroup>();
+        if (verticalLayout != null)
+        {
+            verticalLayout.enabled = false;
+        }
+
+        ContentSizeFitter contentSizeFitter = panel.GetComponent<ContentSizeFitter>();
+        if (contentSizeFitter != null)
+        {
+            contentSizeFitter.enabled = false;
+        }
+
+        ConfigurePanel(panel.GetComponent<Image>(), ForestGreen);
+
+        float padding = Mathf.Min(16f, Mathf.Min(panelWidth, panelHeight) * 0.08f);
+        float titleHeight = Mathf.Clamp(panelHeight * 0.132f, 48f, 74f);
+        float summaryHeight = Mathf.Clamp(panelHeight * 0.3f, 100f, 170f);
+        float buttonHeight = Mathf.Clamp(panelHeight * 0.107f, 36f, 60f);
+        float spacing = Mathf.Max(ItemSpacing, (panelHeight - padding * 2f -
+            titleHeight - summaryHeight - buttonHeight * 3f) / 4f);
+        float titleY = panelHeight * 0.5f - padding - titleHeight * 0.5f;
+        float summaryY = titleY - titleHeight * 0.5f - spacing - summaryHeight * 0.5f;
+        float buttonY = summaryY - summaryHeight * 0.5f - spacing - buttonHeight * 0.5f;
+        float buttonWidth = Mathf.Min(320f, Mathf.Max(0f, panelWidth - padding * 2f));
+        float summaryWidth = Mathf.Min(460f, Mathf.Max(0f, panelWidth - padding * 2f));
+
+        ConfigureText(titleText, new Vector2(panelWidth - padding * 2f, titleHeight),
+            new Vector2(0f, titleY), ScreenTitleFontSize, EmphasisFontStyle, WarmCream,
+            TextAnchor.MiddleCenter);
+
+        if (summaryPanel != null)
+        {
+            ConfigurePanel(summaryPanel.GetComponent<Image>(), WarmCream);
+            SetRectTransform(summaryPanel as RectTransform, new Vector2(summaryWidth, summaryHeight),
+                new Vector2(0f, summaryY));
+        }
+        else
+        {
+            Debug.LogError("GameOverPanel is missing its RunSummaryPanel.");
+        }
+
+        float resultTextWidth = Mathf.Max(0f, summaryWidth - padding * 2f);
+        float resultTextHeight = Mathf.Min(48f, summaryHeight * 0.34f);
+        ConfigureText(scoreText, new Vector2(resultTextWidth, resultTextHeight),
+            new Vector2(0f, summaryHeight * 0.18f), ResultFontSize, EmphasisFontStyle,
+            DeepGreen, TextAnchor.MiddleCenter);
+        ConfigureText(distanceText, new Vector2(resultTextWidth, resultTextHeight),
+            new Vector2(0f, -summaryHeight * 0.18f), ResultFontSize, EmphasisFontStyle,
+            DeepGreen, TextAnchor.MiddleCenter);
+
+        ConfigureGameOverButton(retryButton, buttonWidth, buttonHeight, buttonY, ChristmasRed);
+        ConfigureGameOverButton(quitButton, buttonWidth, buttonHeight, buttonY - buttonHeight - spacing,
+            ButtonGreen);
+        ConfigureGameOverButton(menuButton, buttonWidth, buttonHeight,
+            buttonY - (buttonHeight + spacing) * 2f, ButtonGreen);
+    }
+
+    private static void ConfigureGameOverButton(Button button, float width, float height, float y,
+        Color backgroundColor)
+    {
+        if (button == null)
+        {
+            Debug.LogError("A required game-over button is missing.");
+            return;
+        }
+
+        SetRectTransform(button.transform as RectTransform, new Vector2(width, height), new Vector2(0f, y));
+        ConfigureButton(button, button.GetComponent<Image>(), backgroundColor);
+        ConfigureButtonText(button.GetComponentInChildren<Text>(true), MenuButtonFontSize,
+            EmphasisFontStyle, Color.white, TextAnchor.MiddleCenter);
     }
 
     private static void ConfigureNamedPanels(Transform root, string panelName, Color color)
@@ -593,7 +1038,7 @@ public static class GameUITheme
         Text templateText = template.GetComponentInChildren<Text>(true);
         if (templateText != null)
         {
-            GameObject textObject = Object.Instantiate(templateText.gameObject, buttonObject.transform, false);
+            GameObject textObject = UnityEngine.Object.Instantiate(templateText.gameObject, buttonObject.transform, false);
             textObject.name = "Text";
             Text text = textObject.GetComponent<Text>();
             text.text = label;
@@ -642,6 +1087,18 @@ public static class GameUITheme
 
         ApplyButtonLabelPadding(text.rectTransform);
         ConfigureTextAppearance(text, fontSize, fontStyle, color, alignment);
+        text.resizeTextMinSize = Mathf.Max(18, fontSize - 4);
+    }
+
+    public static void SetTextColor(Text text, Color color)
+    {
+        if (text == null)
+        {
+            Debug.LogError("A required UI text element is missing.");
+            return;
+        }
+
+        text.color = color;
     }
 
     private static void ConfigureTextInPlace(Text text, int fontSize, FontStyle fontStyle, Color color,
@@ -733,7 +1190,7 @@ public static class GameUITheme
             label.color = Color.white;
             label.alignment = TextAnchor.MiddleCenter;
             label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = 16;
+            label.resizeTextMinSize = Mathf.Max(18, MenuButtonFontSize - 4);
             label.resizeTextMaxSize = MenuButtonFontSize;
             label.raycastTarget = false;
             AddTextShadow(label);
@@ -769,6 +1226,9 @@ public static class GameUITheme
         labelRect.anchorMax = Vector2.one;
         labelRect.offsetMin = new Vector2(ItemPadding, ItemPadding);
         labelRect.offsetMax = new Vector2(-ItemPadding, -ItemPadding);
+        labelRect.anchoredPosition = Vector2.zero;
+        labelRect.sizeDelta = Vector2.zero;
+        labelRect.localScale = Vector3.one;
     }
 
     /// <summary>

@@ -18,9 +18,6 @@ public class GameManager : MonoBehaviour {
 	private bool paused;
 	private bool gameOverHandled;
 	private bool achievedNewHighScore;
-	private GUIStyle pausePanelStyle;
-	private GUIStyle pauseLabelStyle;
-	private GUIStyle pauseButtonStyle;
 
 	/// <summary>
 	/// Canvas shown when the player loses the run.
@@ -103,49 +100,17 @@ public class GameManager : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Draws the pause menu using Unity's immediate-mode GUI.
+	/// Delegates pause-menu rendering to the shared UI theme.
 	/// </summary>
 	private void OnGUI () {
 	    if (paused) {
-			EnsurePauseStyles();
-	    	float panelWidth = 300f;
-	    	float panelHeight = 190f;
-	    	float x = (Screen.width - panelWidth) * 0.5f;
-	    	float y = (Screen.height - panelHeight) * 0.5f;
-			Color previousBackgroundColor = GUI.backgroundColor;
-			GUI.backgroundColor = Color.white;
-	    	GUI.Box (new Rect (x, y, panelWidth, panelHeight), Localization.Get ("pause.title"), pausePanelStyle);
-	    	GUI.Label (new Rect (x + 20f, y + 42f, panelWidth - 40f, 24f), Localization.Get ("pause.continue.hint"), pauseLabelStyle);
-			GUI.backgroundColor = GameUITheme.ChristmasRed;
-	    	if (GUI.Button (new Rect (x + 20f, y + 78f, panelWidth - 40f, 30f), Localization.Get ("pause.continue"), pauseButtonStyle)) {
-	    		ResumeGame ();
-	    	}
-			GUI.backgroundColor = GameUITheme.ButtonGreen;
-	    	if (GUI.Button (new Rect (x + 20f, y + 114f, panelWidth - 40f, 30f), Localization.Get ("pause.restart"), pauseButtonStyle)) {
-	    		RestartRun ();
-	    	}
-	    	if (GUI.Button (new Rect (x + 20f, y + 150f, panelWidth - 40f, 30f), Localization.Get ("pause.menu"), pauseButtonStyle)) {
-	    		ReturnToMainMenu ();
-	    	}
-			GUI.backgroundColor = previousBackgroundColor;
+	    	GameUITheme.DrawPauseMenu(Localization.Get("pause.title"),
+	    		Localization.Get("pause.continue.hint"),
+	    		Localization.Get("pause.continue"),
+	    		Localization.Get("pause.restart"),
+	    		Localization.Get("pause.menu"),
+	    		ResumeGame, RestartRun, ReturnToMainMenu);
 	    }
-	}
-
-	private void EnsurePauseStyles()
-	{
-		if (pausePanelStyle != null)
-		{
-			return;
-		}
-
-		pausePanelStyle = GameUITheme.CreatePanelStyle();
-		pausePanelStyle.fontSize = GameUITheme.PanelTitleFontSize;
-		pausePanelStyle.fontStyle = GameUITheme.EmphasisFontStyle;
-		pausePanelStyle.alignment = TextAnchor.UpperCenter;
-		pausePanelStyle.normal.textColor = GameUITheme.WarmCream;
-		pauseLabelStyle = GameUITheme.CreateLabelStyle(
-			GameUITheme.BodyFontSize, GameUITheme.BodyFontStyle, TextAnchor.MiddleCenter, GameUITheme.WarmCream);
-		pauseButtonStyle = GameUITheme.CreateButtonStyle(GameUITheme.ButtonFontSize);
 	}
 
 	/// <summary>
