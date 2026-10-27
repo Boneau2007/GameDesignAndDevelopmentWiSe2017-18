@@ -11,6 +11,10 @@ public static class GameUITheme
 {
     public const int ItemPadding = 5;
     public const int ItemSpacing = 5;
+    public const int BorderThickness = 2;
+    private const float GameplayFrameInset = 0f;
+    private const int GuiBorderThickness = BorderThickness * 2;
+    private const int GuiPanelTextureSize = GuiBorderThickness * 2 + 1;
     public const FontStyle BodyFontStyle = FontStyle.Normal;
     public const FontStyle EmphasisFontStyle = FontStyle.Bold;
     public const int MenuButtonFontSize = 22;
@@ -30,6 +34,7 @@ public static class GameUITheme
     public static readonly Color ChristmasRed = new Color(0.66f, 0.12f, 0.14f, 1f);
     public static readonly Color ButtonGreen = new Color(0.15f, 0.38f, 0.27f, 1f);
     public static readonly Color AccentGold = new Color(0.92f, 0.68f, 0.28f, 1f);
+    public static readonly Color BorderBlack = Color.black;
     private static readonly Dictionary<Color, Texture2D> GuiTextures = new Dictionary<Color, Texture2D>();
     private static readonly Dictionary<Color, Texture2D> GuiPanelTextures = new Dictionary<Color, Texture2D>();
     private static GUIStyle characterTitleStyle;
@@ -48,6 +53,7 @@ public static class GameUITheme
     private static GUIStyle pausePanelStyle;
     private static GUIStyle pauseLabelStyle;
     private static GUIStyle pauseButtonStyle;
+    private static Sprite gameplayFrameSprite;
 
     public static void DrawPauseMenu(string title, string continueHint, string continueLabel,
         string restartLabel, string menuLabel, UnityAction continueAction, UnityAction restartAction,
@@ -85,14 +91,27 @@ public static class GameUITheme
         string hint, Action<int> selectCharacter, UnityAction startRun, UnityAction returnToMenu)
     {
         EnsureSelectorStyles();
-        float panelWidth = Mathf.Min(360f, Screen.width - 24f);
-        const float panelHeight = 260f;
-        float x = (Screen.width - panelWidth) * 0.5f;
+        const float panelWidth = 360f;
+        const float basePanelHeight = 260f;
+        float actualPanelWidth = Mathf.Min(panelWidth, Screen.width - 24f);
+        float textWidth = Mathf.Max(0f, actualPanelWidth - 150f - ItemPadding * 2f);
+        string characterName = characterNames[selectedIndex];
+        string description = characterDescriptions[selectedIndex];
+        float nameHeight = Mathf.Max(28f,
+            characterNameStyle.CalcHeight(new GUIContent(characterName), textWidth));
+        float descriptionHeight = Mathf.Max(54f,
+            characterDescriptionStyle.CalcHeight(new GUIContent(description), textWidth));
+        float descriptionY = 54f + nameHeight + ItemSpacing / 2f;
+        float cardHeight = descriptionY + descriptionHeight + ItemPadding * 2f - 42f;
+        float extraCardHeight = Mathf.Max(0f, cardHeight - 106f);
+        float panelHeight = Mathf.Min(basePanelHeight + extraCardHeight, Screen.height - 24f);
+        float x = (Screen.width - actualPanelWidth) * 0.5f;
         float y = (Screen.height - panelHeight) * 0.5f;
 
-        DrawPanel(new Rect(x, y, panelWidth, panelHeight), characterPanelStyle, Color.white);
-        DrawPanel(new Rect(x + 12f, y + 42f, panelWidth - 24f, 106f), characterCardStyle, Color.white);
-        DrawLabel(new Rect(x + 12f, y + 10f, panelWidth - 24f, 24f), title, characterTitleStyle);
+        DrawPanel(new Rect(x, y, actualPanelWidth, panelHeight), characterPanelStyle, Color.white);
+        DrawPanel(new Rect(x + 12f, y + 42f, actualPanelWidth - 24f, 106f + extraCardHeight),
+            characterCardStyle, Color.white);
+        DrawLabel(new Rect(x + 12f, y + 10f, actualPanelWidth - 24f, 24f), title, characterTitleStyle);
 
         if (previewSprite != null)
         {
@@ -126,38 +145,41 @@ public static class GameUITheme
             DrawLabel(new Rect(x + 24f, y + 46f, 88f, 88f), characterNames[0], characterNameStyle);
         }
 
-        DrawLabel(new Rect(x + 126f, y + 54f, panelWidth - 150f, 28f),
-            characterNames[selectedIndex], characterNameStyle);
-        DrawLabel(new Rect(x + 126f, y + 84f, panelWidth - 150f, 54f),
-            characterDescriptions[selectedIndex], characterDescriptionStyle);
+        DrawLabel(new Rect(x + 126f, y + 54f, actualPanelWidth - 150f, nameHeight),
+            characterName, characterNameStyle);
+        DrawLabel(new Rect(x + 126f, y + descriptionY, textWidth, descriptionHeight),
+            description, characterDescriptionStyle);
 
         float buttonGap = ItemSpacing;
-        float buttonWidth = (panelWidth - 24f - buttonGap * (characterNames.Length - 1)) /
+        float buttonWidth = (actualPanelWidth - 24f - buttonGap * (characterNames.Length - 1)) /
                             characterNames.Length;
         for (int i = 0; i < characterNames.Length; i++)
         {
             string label = i == selectedIndex ? "[" + (i + 1) + "]" : (i + 1).ToString();
             Color buttonColor = i == selectedIndex ? ChristmasRed : ButtonGreen;
-            if (DrawButton(new Rect(x + 12f + (buttonWidth + buttonGap) * i, y + 154f,
+            if (DrawButton(new Rect(x + 12f + (buttonWidth + buttonGap) * i,
+                    y + 154f + extraCardHeight,
                     buttonWidth, 30f), label, characterOptionButtonStyle, buttonColor))
             {
                 selectCharacter(i);
             }
         }
 
-        if (DrawButton(new Rect(x + 12f, y + 202f, panelWidth * 0.5f - 18f, 36f),
+        if (DrawButton(new Rect(x + 12f, y + 202f + extraCardHeight,
+                actualPanelWidth * 0.5f - 18f, 36f),
                 startLabel, characterActionButtonStyle, ChristmasRed))
         {
             startRun();
         }
 
-        if (DrawButton(new Rect(x + panelWidth * 0.5f + 6f, y + 202f,
-                panelWidth * 0.5f - 18f, 36f), backLabel, characterActionButtonStyle, ButtonGreen))
+        if (DrawButton(new Rect(x + actualPanelWidth * 0.5f + 6f, y + 202f + extraCardHeight,
+                actualPanelWidth * 0.5f - 18f, 36f), backLabel, characterActionButtonStyle, ButtonGreen))
         {
             returnToMenu();
         }
 
-        DrawLabel(new Rect(x + 12f, y + 238f, panelWidth - 24f, 18f), hint, characterFooterStyle);
+        DrawLabel(new Rect(x + 12f, y + 238f + extraCardHeight,
+            actualPanelWidth - 24f, 18f), hint, characterFooterStyle);
     }
 
     public static Vector2 DrawLanguageSelector(IReadOnlyList<Localization.LanguageOption> languages,
@@ -170,23 +192,40 @@ public static class GameUITheme
             return scrollPosition;
         }
 
-        const float buttonHeight = 82f;
         const float buttonGap = ItemSpacing;
         const float panelPadding = ItemPadding * 2f;
-        int columns = Mathf.Min(3, languages.Count);
+        int columns = Screen.width < 440f ? 1 : Mathf.Min(2, languages.Count);
         int rows = Mathf.CeilToInt(languages.Count / (float)columns);
-        float contentHeight = rows * buttonHeight + (rows - 1) * buttonGap;
+        float maxPanelWidth = Mathf.Max(0f, Screen.width - 24f);
+        float desiredPanelWidth = Mathf.Min(520f, 250f * columns + panelPadding * 2f +
+            buttonGap * (columns - 1));
+        float panelWidth = Mathf.Min(desiredPanelWidth, maxPanelWidth);
+        const float scrollbarWidth = 16f;
+        float buttonWidth = Mathf.Max(0f,
+            (panelWidth - panelPadding * 2f - scrollbarWidth -
+             buttonGap * (columns - 1)) / columns);
+        float[] rowHeights = new float[rows];
+        for (int i = 0; i < languages.Count; i++)
+        {
+            int row = i / columns;
+            float labelWidth = Mathf.Max(0f, buttonWidth - ItemPadding * 2f);
+            float labelHeight = languageNameStyle.CalcHeight(
+                new GUIContent(languages[i].DisplayName), labelWidth);
+            rowHeights[row] = Mathf.Max(rowHeights[row], 42f + labelHeight + ItemPadding * 2f);
+        }
+
+        float contentHeight = (rows - 1) * buttonGap;
+        for (int row = 0; row < rows; row++)
+        {
+            rowHeights[row] = Mathf.Max(82f, rowHeights[row]);
+            contentHeight += rowHeights[row];
+        }
+
         float maxPanelHeight = Mathf.Max(100f, Screen.height - 24f);
         const float titleHeight = 24f;
         const float backButtonHeight = 30f;
         float fixedPanelHeight = panelPadding * 2f + titleHeight + backButtonHeight + buttonGap * 2f;
         bool needsScroll = fixedPanelHeight + contentHeight > maxPanelHeight;
-        float buttonWidth = Mathf.Min(92f,
-            (Screen.width - panelPadding * 2f - 16f - (needsScroll ? 16f : 0f) -
-             buttonGap * (columns - 1)) / columns);
-        buttonWidth = Mathf.Max(54f, buttonWidth);
-        float panelWidth = panelPadding * 2f + buttonWidth * columns + buttonGap * (columns - 1) +
-                           (needsScroll ? 16f : 0f);
         float panelHeight = Mathf.Min(fixedPanelHeight + contentHeight, maxPanelHeight);
         float x = (Screen.width - panelWidth) * 0.5f;
         float y = (Screen.height - panelHeight) * 0.5f;
@@ -198,18 +237,24 @@ public static class GameUITheme
 
         Rect scrollRect = new Rect(x + panelPadding, y + panelPadding + titleHeight + buttonGap,
             panelWidth - panelPadding * 2f, panelHeight - fixedPanelHeight);
-        Rect contentRect = new Rect(0f, 0f, scrollRect.width - (needsScroll ? 16f : 0f), contentHeight);
+        Rect contentRect = new Rect(0f, 0f, scrollRect.width - scrollbarWidth, contentHeight);
         scrollPosition = BeginScrollView(scrollRect, scrollPosition, contentRect, false, needsScroll);
         for (int i = 0; i < languages.Count; i++)
         {
             Localization.LanguageOption language = languages[i];
             int row = i / columns;
             int column = i % columns;
+            float rowY = 0f;
+            for (int precedingRow = 0; precedingRow < row; precedingRow++)
+            {
+                rowY += rowHeights[precedingRow] + buttonGap;
+            }
+
             Rect buttonRect = new Rect(
                 column * (buttonWidth + buttonGap),
-                row * (buttonHeight + buttonGap),
+                rowY,
                 buttonWidth,
-                buttonHeight);
+                rowHeights[row]);
 
             bool isSelected = string.Equals(currentLanguageCode, language.Code,
                 StringComparison.OrdinalIgnoreCase);
@@ -223,7 +268,7 @@ public static class GameUITheme
                     buttonRect.width - ItemPadding * 2f, 34f),
                 language.Flag, flagStyle);
             DrawLabel(new Rect(buttonRect.x + ItemPadding, buttonRect.y + 42f,
-                    buttonRect.width - ItemPadding * 2f, 35f),
+                    buttonRect.width - ItemPadding * 2f, buttonRect.height - 42f - ItemPadding),
                 language.DisplayName, languageNameStyle);
         }
         EndScrollView();
@@ -345,7 +390,8 @@ public static class GameUITheme
         style.font = GUI.skin.font;
         ApplyGuiSpacing(style);
         Texture2D background = GetGuiPanelTexture(backgroundColor);
-        style.border = new RectOffset(1, 1, 1, 1);
+        style.border = new RectOffset(GuiBorderThickness, GuiBorderThickness,
+            GuiBorderThickness, GuiBorderThickness);
         style.normal.background = background;
         style.hover.background = background;
         style.active.background = background;
@@ -768,10 +814,122 @@ public static class GameUITheme
             ConfigureText(label, label.rectTransform.sizeDelta, label.rectTransform.anchoredPosition,
                 fontSize, EmphasisFontStyle, WarmCream, TextAnchor.MiddleCenter);
         }
+
+        ConfigureGameplayFrame(canvasRoot);
+    }
+
+    private static void ConfigureGameplayFrame(Transform canvasRoot)
+    {
+        Transform frame = canvasRoot.Find("GameplayFrame");
+        if (frame == null)
+        {
+            GameObject frameObject = new GameObject("GameplayFrame", typeof(RectTransform),
+                typeof(CanvasRenderer), typeof(Image));
+            frameObject.transform.SetParent(canvasRoot, false);
+            frame = frameObject.transform;
+        }
+
+        RectTransform frameRect = frame as RectTransform;
+        frameRect.anchorMin = Vector2.zero;
+        frameRect.anchorMax = Vector2.one;
+        frameRect.offsetMin = new Vector2(GameplayFrameInset, GameplayFrameInset);
+        frameRect.offsetMax = new Vector2(-GameplayFrameInset, -GameplayFrameInset);
+        frameRect.SetAsFirstSibling();
+
+        string[] oldEdges = { "TopBorder", "BottomBorder", "LeftBorder", "RightBorder" };
+        foreach (string edgeName in oldEdges)
+        {
+            Transform oldEdge = frame.Find(edgeName);
+            if (oldEdge != null)
+            {
+                oldEdge.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(oldEdge.gameObject);
+            }
+        }
+
+        Image frameImage = frame.GetComponent<Image>();
+        if (frameImage == null)
+        {
+            frameImage = frame.gameObject.AddComponent<Image>();
+        }
+
+        frameImage.sprite = GetGameplayFrameSprite();
+        frameImage.type = Image.Type.Sliced;
+        frameImage.color = Color.white;
+        frameImage.raycastTarget = false;
+        Shadow shadow = frameImage.GetComponent<Shadow>();
+        if (shadow == null)
+        {
+            shadow = frameImage.gameObject.AddComponent<Shadow>();
+        }
+
+        shadow.enabled = true;
+        shadow.effectColor = BorderBlack;
+        shadow.effectDistance = new Vector2(1f, -1f);
+        shadow.useGraphicAlpha = true;
+
+        Outline outline = frameImage.GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.enabled = false;
+        }
+    }
+
+    private static Sprite GetGameplayFrameSprite()
+    {
+        if (gameplayFrameSprite != null)
+        {
+            return gameplayFrameSprite;
+        }
+
+        const int textureSize = 32;
+        const int borderSize = 2;
+        const float outerRadius = 4.5f;
+        Texture2D texture = new Texture2D(textureSize, textureSize, TextureFormat.RGBA32, false)
+        {
+            name = "GameUIThemeGameplayFrame",
+            hideFlags = HideFlags.HideAndDontSave,
+            filterMode = FilterMode.Bilinear,
+            wrapMode = TextureWrapMode.Clamp
+        };
+
+        float halfSize = textureSize * 0.5f;
+        for (int y = 0; y < textureSize; y++)
+        {
+            for (int x = 0; x < textureSize; x++)
+            {
+                bool insideOuter = IsInsideRoundedRectangle(x + 0.5f, y + 0.5f,
+                    halfSize, halfSize, halfSize, halfSize, outerRadius);
+                bool insideInner = IsInsideRoundedRectangle(x + 0.5f, y + 0.5f,
+                    halfSize, halfSize, halfSize - borderSize, halfSize - borderSize,
+                    outerRadius - borderSize);
+                texture.SetPixel(x, y, insideOuter && !insideInner ? AccentGold : Color.clear);
+            }
+        }
+
+        texture.Apply();
+        gameplayFrameSprite = Sprite.Create(texture, new Rect(0f, 0f, textureSize, textureSize),
+            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect,
+            new Vector4(borderSize, borderSize, borderSize, borderSize));
+        gameplayFrameSprite.name = "GameUIThemeGameplayFrame";
+        gameplayFrameSprite.hideFlags = HideFlags.HideAndDontSave;
+        return gameplayFrameSprite;
+    }
+
+    private static bool IsInsideRoundedRectangle(float x, float y, float centerX, float centerY,
+        float halfWidth, float halfHeight, float radius)
+    {
+        float cornerX = Mathf.Abs(x - centerX) - (halfWidth - radius);
+        float cornerY = Mathf.Abs(y - centerY) - (halfHeight - radius);
+        float outsideX = Mathf.Max(cornerX, 0f);
+        float outsideY = Mathf.Max(cornerY, 0f);
+        float distance = Mathf.Min(Mathf.Max(cornerX, cornerY), 0f) +
+                         Mathf.Sqrt(outsideX * outsideX + outsideY * outsideY) - radius;
+        return distance <= 0f;
     }
 
     /// <summary>
-    /// Gives a panel graphic the shared surface color and gold outline.
+    /// Gives a panel graphic the shared surface color and rounded black-and-gold border.
     /// </summary>
     public static void ConfigurePanel(Image image, Color backgroundColor)
     {
@@ -783,15 +941,39 @@ public static class GameUITheme
         image.color = backgroundColor;
         image.raycastTarget = false;
 
+        Transform border = image.transform.Find("GameUIThemeBorder");
+        if (border != null)
+        {
+            border.gameObject.SetActive(false);
+            UnityEngine.Object.Destroy(border.gameObject);
+        }
+
+        ConfigurePanelEffects(image, true);
+    }
+
+    private static void ConfigurePanelEffects(Image image, bool useGraphicAlpha)
+    {
+        Shadow shadow = image.GetComponent<Shadow>();
+        if (shadow == null)
+        {
+            shadow = image.gameObject.AddComponent<Shadow>();
+        }
+
+        shadow.enabled = true;
+        shadow.effectColor = BorderBlack;
+        shadow.effectDistance = new Vector2(BorderThickness, -BorderThickness);
+        shadow.useGraphicAlpha = useGraphicAlpha;
+
         Outline outline = image.GetComponent<Outline>();
         if (outline == null)
         {
             outline = image.gameObject.AddComponent<Outline>();
         }
 
+        outline.enabled = true;
         outline.effectColor = AccentGold;
-        outline.effectDistance = new Vector2(2f, -2f);
-        outline.useGraphicAlpha = true;
+        outline.effectDistance = new Vector2(BorderThickness, -BorderThickness);
+        outline.useGraphicAlpha = useGraphicAlpha;
     }
 
     public static void ConfigureGameOverLayout(Transform panel, Transform summaryPanel, Text titleText,
@@ -830,6 +1012,22 @@ public static class GameUITheme
         }
 
         ConfigurePanel(panel.GetComponent<Image>(), ForestGreen);
+        if (summaryPanel != null)
+        {
+            Image summaryImage = summaryPanel.GetComponent<Image>();
+            if (summaryImage == null)
+            {
+                summaryImage = summaryPanel.gameObject.AddComponent<Image>();
+            }
+
+            if (summaryImage.sprite == null)
+            {
+                summaryImage.sprite = GetRoundedPanelSprite();
+                summaryImage.type = Image.Type.Sliced;
+            }
+
+            ConfigurePanel(summaryImage, DeepGreen);
+        }
 
         float padding = Mathf.Min(16f, Mathf.Min(panelWidth, panelHeight) * 0.08f);
         float titleHeight = Mathf.Clamp(panelHeight * 0.132f, 48f, 74f);
@@ -905,8 +1103,25 @@ public static class GameUITheme
                 image = panel.gameObject.AddComponent<Image>();
             }
 
+            if (image.sprite == null)
+            {
+                image.sprite = GetRoundedPanelSprite();
+                image.type = Image.Type.Sliced;
+            }
+
             ConfigurePanel(image, color);
         }
+    }
+
+    private static Sprite GetRoundedPanelSprite()
+    {
+        Sprite sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
+        if (sprite == null)
+        {
+            Debug.LogError("The built-in rounded panel sprite could not be loaded.");
+        }
+
+        return sprite;
     }
 
     private static Transform FindAncestor(Transform current, string objectName)
@@ -953,19 +1168,35 @@ public static class GameUITheme
             return texture;
         }
 
-        texture = new Texture2D(3, 3, TextureFormat.RGBA32, false)
+        texture = new Texture2D(GuiPanelTextureSize, GuiPanelTextureSize, TextureFormat.RGBA32, false)
         {
             name = "GameUIThemePanel",
             hideFlags = HideFlags.HideAndDontSave,
             filterMode = FilterMode.Point,
             wrapMode = TextureWrapMode.Clamp
         };
-        for (int y = 0; y < 3; y++)
+        for (int y = 0; y < texture.height; y++)
         {
-            for (int x = 0; x < 3; x++)
+            for (int x = 0; x < texture.width; x++)
             {
-                bool isBorder = x == 0 || y == 0 || x == 2 || y == 2;
-                texture.SetPixel(x, y, isBorder ? AccentGold : backgroundColor);
+                float halfSize = (texture.width - 1) * 0.5f;
+                float radius = GuiBorderThickness - 1f;
+                float cornerX = Mathf.Abs(x - halfSize) - (halfSize - radius);
+                float cornerY = Mathf.Abs(y - halfSize) - (halfSize - radius);
+                float outsideCornerDistance = Mathf.Sqrt(Mathf.Max(0f, cornerX) * Mathf.Max(0f, cornerX) +
+                                                         Mathf.Max(0f, cornerY) * Mathf.Max(0f, cornerY)) +
+                                             Mathf.Min(Mathf.Max(cornerX, cornerY), 0f) - radius;
+                if (outsideCornerDistance > 0f)
+                {
+                    texture.SetPixel(x, y, Color.clear);
+                    continue;
+                }
+
+                float edgeDistance = -outsideCornerDistance;
+                Color pixelColor = edgeDistance < BorderThickness
+                    ? BorderBlack
+                    : edgeDistance < GuiBorderThickness ? AccentGold : backgroundColor;
+                texture.SetPixel(x, y, pixelColor);
             }
         }
 

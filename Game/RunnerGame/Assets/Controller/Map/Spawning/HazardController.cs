@@ -35,6 +35,11 @@ public class HazardController : MonoBehaviour
     /// </summary>
     void Update()
     {
+        if (gameManager == null || !gameManager.isGameplayActive())
+        {
+            return;
+        }
+
         spawnHazard();
     }
 
@@ -45,10 +50,19 @@ public class HazardController : MonoBehaviour
     /// </summary>
     public void spawnHazard()
     {
+        if (gameManager == null || !gameManager.isGameplayActive())
+        {
+            return;
+        }
+
         if (transform.position.x < generationPoint.position.x)
         {
+            int score = gameManager.getScore();
+            int spawnThreshold = score / 1000;
             spawnChance = Random.Range(1, 1000);
-            if (spawnChance <= (gameManager.getScore() / 1000))
+            float spawnProbability = Mathf.Clamp01(spawnThreshold / 999f);
+            Debug.Log(string.Format("Snowball spawn chance: {0:P1}", spawnProbability));
+            if (spawnChance <= spawnThreshold)
             {
 				Debug.Log("Spawning Snowball!");
                 transform.position = new Vector2(generationPoint.position.x + 1, generationPoint.position.y);
@@ -61,9 +75,7 @@ public class HazardController : MonoBehaviour
                 var gen_to_player = player_to_cam - (Vector2)transform.position;
                 //Debug.Log ("Score:  " + player_to_cam);
                 clone.GetComponent<Rigidbody2D>().AddForce(gen_to_player.normalized * force);
-
             }
-            Debug.Log ("SpawnChance:  " + spawnChance);
         }
     }
 }

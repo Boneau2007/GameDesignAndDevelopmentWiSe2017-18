@@ -225,6 +225,14 @@ public class GameManager : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Reports whether gameplay systems should update during an active run.
+	/// </summary>
+	/// <returns><see langword="true"/> while the run is active and unpaused.</returns>
+	public bool isGameplayActive(){
+		return started && !paused && !gameOverHandled && Time.timeScale > 0f;
+	}
+
+	/// <summary>
 	/// Reports whether the player is still alive.
 	/// </summary>
 	/// <returns><see langword="true"/> if the player is alive; otherwise, <see langword="false"/>.</returns>

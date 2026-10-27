@@ -4,6 +4,7 @@
 [Bb]uild/
 [Bb]uilds/
 Assets/AssetStoreTools*
+Game/RunnerGame/Logs/**
 
 # Visual Studio 2015 cache directory
 /.vs/
